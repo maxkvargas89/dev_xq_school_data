@@ -1,0 +1,5 @@
+defaultProject: xq-data-bigquery
+defaultLocation: US
+defaultDataset: dataform_xq_school_data
+defaultAssertionDataset: dataform_assertions
+dataformCoreVersion: 3.0.0
