@@ -1,0 +1,8 @@
+config {
+  type: "table",
+  description: "Cleaned up data corresponding to CA enrollment"
+}
+
+select *
+from ${ref("ca_doe_enrollment")}
+limit 5
