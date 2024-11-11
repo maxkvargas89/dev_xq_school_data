@@ -225,5 +225,4 @@ UNION ALL (
     year
   FROM
     cte3
-  LIMIT
-    10)
+)
