@@ -1,0 +1,227 @@
+config {
+    type: "table",
+    description: "Cleaned up data corresponding to CA enrollment"
+}
+
+  (
+  WITH
+    cte1 AS (
+    SELECT
+      *,
+      CAST(CASE
+          WHEN gr_10 = '*' THEN '0'
+          ELSE gr_10
+      END
+        AS INT64) AS gr_10_new,
+      CAST(CASE
+          WHEN gr_11 = '*' THEN '0'
+          ELSE gr_11
+      END
+        AS INT64) AS gr_11_new,
+      CAST(CASE
+          WHEN gr_12 = '*' THEN '0'
+          ELSE gr_12
+      END
+        AS INT64) AS gr_12_new,
+    FROM
+      `staging_xq_school_data.ca_doe_enrollment`
+    WHERE
+      _file LIKE 'enrollment/%' ),
+    cte2 AS (
+    SELECT
+      *
+    FROM
+      cte1
+    UNPIVOT
+      (enrollment FOR grade IN (adult,
+          ungr_elm,
+          ungr_sec,
+          kdgn,
+          gr_1,
+          gr_2,
+          gr_3,
+          gr_4,
+          gr_5,
+          gr_6,
+          gr_7,
+          gr_8,
+          gr_9,
+          gr_10_new,
+          gr_11_new,
+          gr_12_new,
+          enr_total)) ),
+    cte3 AS (
+    SELECT
+      RIGHT(LPAD(cds_code,14,'0'),12) AS cds_code,
+      county,
+      district,
+      school,
+      grade,
+      (CASE
+          WHEN ethnic = 0 THEN 'Not Reported'
+          WHEN ethnic = 1 THEN 'American Indian or Alaska Native, Not Hispanic'
+          WHEN ethnic = 2 THEN 'Asian, Not Hispanic'
+          WHEN ethnic = 3 THEN 'Pacific Islander, Not Hispanic'
+          WHEN ethnic = 4 THEN 'Filipino, Not Hispanic'
+          WHEN ethnic = 5 THEN 'Hispanic or Latino'
+          WHEN ethnic = 6 THEN 'African American, not Hispanic'
+          WHEN ethnic = 7 THEN 'White, not Hispanic'
+          WHEN ethnic = 9 THEN 'Two or More Races, Not Hispanic'
+      END
+        ) AS ethnicity_race,
+      gender,
+      (CASE
+          WHEN _file = 'enrollment/enrollment_15-16_ca.csv' THEN '2015-16'
+          WHEN _file = 'enrollment/enrollment_16-17_ca.csv' THEN '2016-17'
+          WHEN _file = 'enrollment/enrollment_17-18_ca.csv' THEN '2017-18'
+          WHEN _file = 'enrollment/enrollment_18-19_ca.csv' THEN '2018-19'
+          WHEN _file = 'enrollment/enrollment_19-20_ca.csv' THEN '2019-20'
+          WHEN _file = 'enrollment/enrollment_20-21_ca.csv' THEN '2020-21'
+          WHEN _file = 'enrollment/enrollment_21-22_ca.csv' THEN '2021-22'
+          WHEN _file = 'enrollment/enrollment_22-23_ca.csv' THEN '2022-23'
+      END
+        ) AS year,
+      SUM(CAST(enrollment AS INT64)) AS enrollment
+    FROM
+      cte2
+    GROUP BY
+      cds_code,
+      county,
+      district,
+      school,
+      grade,
+      ethnicity_race,
+      gender,
+      year )
+  SELECT
+    cds_code,
+    county,
+    district,
+    school,
+    'n/a' AS charter,
+    REGEXP_REPLACE(regexp_replace(REGEXP_REPLACE(grade,'_new',''),
+        'Enr ',
+        ''),'gr_','') AS grade,
+    CONCAT(ethnicity_race,' ',gender) AS reporting_category,
+    year
+  FROM
+    cte3)
+UNION ALL (
+  WITH
+    cte1 AS (
+    SELECT
+      *,
+      CAST(CASE
+          WHEN gr_10 = '*' THEN '0'
+          ELSE gr_10
+      END
+        AS INT64) AS gr_10_new,
+      CAST(CASE
+          WHEN gr_11 = '*' THEN '0'
+          ELSE gr_11
+      END
+        AS INT64) AS gr_11_new,
+      CAST(CASE
+          WHEN gr_12 = '*' THEN '0'
+          ELSE gr_12
+      END
+        AS INT64) AS gr_12_new,
+    FROM
+      `staging_xq_school_data.ca_doe_enrollment`
+    WHERE
+      _file NOT LIKE 'enrollment/%'
+      AND aggregate_level = 'S' ),
+    cte2 AS (
+    SELECT
+      *
+    FROM
+      cte1
+    UNPIVOT
+      (enrollment FOR grade IN (adult,
+          ungr_elm,
+          ungr_sec,
+          kdgn,
+          gr_1,
+          gr_2,
+          gr_3,
+          gr_4,
+          gr_5,
+          gr_6,
+          gr_7,
+          gr_8,
+          gr_9,
+          gr_10_new,
+          gr_11_new,
+          gr_12_new,
+          enr_total)) ),
+    cte3 AS (
+    SELECT
+      CONCAT(county_code,district_code,school_code) AS cds_code,
+      county_name,
+      district_name,
+      school_name,
+      charter,
+      grade,
+      (CASE
+          WHEN reporting_category = 'AR_03' THEN 'Children enrolled in K-12 grades who are 0 to 3 years old'
+          WHEN reporting_category = 'AR_0418' THEN 'Students enrolled in K-12 grades who are 4 to 18 years old'
+          WHEN reporting_category = 'AR_1922' THEN 'Continuing students enrolled in K-12 grades who are 19 to 22 years old'
+          WHEN reporting_category = 'AR_2329' THEN 'Non-traditional adult students enrolled in K-12 grades who are 23 to 29 years old'
+          WHEN reporting_category = 'AR_3039' THEN 'Non-traditional adult students enrolled in K-12 grades who are 30 to 39 years old'
+          WHEN reporting_category = 'AR_4049' THEN 'Non-traditional adult students enrolled in K-12 grades who are 40 to 49 years old'
+          WHEN reporting_category = 'AR_50P' THEN 'Non-traditional adult students enrolled in K-12 grades who are 50 or more years old'
+          WHEN reporting_category = 'ELAS_ADEL' THEN 'Adult English Learner'
+          WHEN reporting_category = 'ELAS_EL' THEN 'English Learner (Duplicative of SG_EL)'
+          WHEN reporting_category = 'ELAS_EO' THEN 'English Only'
+          WHEN reporting_category = 'ELAS_IFEP' THEN 'Initial Fluent English Proficient'
+          WHEN reporting_category = 'ELAS_MISS' THEN 'ELA Missing'
+          WHEN reporting_category = 'ELAS_RFEP' THEN 'Reclassified Fluent English Proficient'
+          WHEN reporting_category = 'ELAS_TBD' THEN 'ELA To Be Determined'
+          WHEN reporting_category = 'GN_F' THEN 'Female'
+          WHEN reporting_category = 'GN_M' THEN 'Male'
+          WHEN reporting_category = 'GN_X' THEN 'Non-binary'
+          WHEN reporting_category = 'GN_Z' THEN 'Missing'
+          WHEN reporting_category = 'RE_A' THEN 'Asian'
+          WHEN reporting_category = 'RE_B' THEN 'African American'
+          WHEN reporting_category = 'RE_D' THEN 'Race Not Reported'
+          WHEN reporting_category = 'RE_F' THEN 'Filipino'
+          WHEN reporting_category = 'RE_H' THEN 'Hispanic or Latino'
+          WHEN reporting_category = 'RE_I' THEN 'American Indian or Alaska Native'
+          WHEN reporting_category = 'RE_P' THEN 'Pacific Islander'
+          WHEN reporting_category = 'RE_T' THEN 'Two or More Races'
+          WHEN reporting_category = 'RE_W' THEN 'White'
+          WHEN reporting_category = 'SG_EL' THEN 'English Learner (Duplicative of ELAS_EL)'
+          WHEN reporting_category = 'SG_DS' THEN 'Students with Disabilities'
+          WHEN reporting_category = 'SG_SD' THEN 'Socioeconomically Disadvantaged'
+          WHEN reporting_category = 'SG_MG' THEN 'Migrant Youth'
+          WHEN reporting_category = 'SG_FS' THEN 'Foster Youth'
+          WHEN reporting_category = 'SG_HM' THEN 'Homeless Youth'
+          WHEN reporting_category = 'TA' THEN 'Total'
+      END
+        ) AS reporting_category,
+      academic_year AS year,
+      SUM(CAST(enrollment AS INT64)) AS enrollment
+    FROM
+      cte2
+    GROUP BY
+      cds_code,
+      county_name,
+      district_name,
+      school_name,
+      charter,
+      grade,
+      reporting_category,
+      year )
+  SELECT
+    cds_code,
+    county_name,
+    district_name,
+    school_name,
+    charter,
+    REGEXP_REPLACE(regexp_replace(REGEXP_REPLACE(grade,'_new',''),
+        'Enr ',
+        ''),'gr_','') AS grade,
+    reporting_category,
+    year
+  FROM
+    cte3 )
