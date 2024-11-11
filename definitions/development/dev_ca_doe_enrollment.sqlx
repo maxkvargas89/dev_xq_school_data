@@ -224,5 +224,4 @@ UNION ALL (
     reporting_category,
     year
   FROM
-    cte3
-)
+    cte3 )
