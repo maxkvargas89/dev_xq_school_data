@@ -24,7 +24,7 @@ config {
       END
         AS INT64) AS gr_12_new,
     FROM
-      `staging_xq_school_data.ca_doe_enrollment`
+      ${ref("ca_doe_enrollment")}
     WHERE
       _file LIKE 'enrollment/%' ),
     cte2 AS (
@@ -94,6 +94,7 @@ config {
       gender,
       year )
   SELECT
+    year,
     cds_code,
     county,
     district,
@@ -102,8 +103,7 @@ config {
     REGEXP_REPLACE(regexp_replace(REGEXP_REPLACE(grade,'_new',''),
         'Enr ',
         ''),'gr_','') AS grade,
-    CONCAT(ethnicity_race,' ',gender) AS reporting_category,
-    year
+    CONCAT(ethnicity_race,' ',gender) AS reporting_category
   FROM
     cte3)
 UNION ALL (
@@ -127,7 +127,7 @@ UNION ALL (
       END
         AS INT64) AS gr_12_new,
     FROM
-      `staging_xq_school_data.ca_doe_enrollment`
+      ${ref("ca_doe_enrollment")}
     WHERE
       _file NOT LIKE 'enrollment/%'
       AND aggregate_level = 'S' ),
@@ -213,6 +213,7 @@ UNION ALL (
       reporting_category,
       year )
   SELECT
+    year,
     cds_code,
     county_name,
     district_name,
@@ -221,7 +222,6 @@ UNION ALL (
     REGEXP_REPLACE(regexp_replace(REGEXP_REPLACE(grade,'_new',''),
         'Enr ',
         ''),'gr_','') AS grade,
-    reporting_category,
-    year
+    reporting_category
   FROM
     cte3 )
