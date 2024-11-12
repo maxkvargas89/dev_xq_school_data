@@ -29,7 +29,7 @@ select
         when reporting_category = 'SF' then 'Foster'
         when reporting_category = 'SH' then 'Homeless'
         when reporting_category = 'TA' then 'Total' end) as reporting_category,
-    cast(one_year_graduate_count as INT64) as one_yr_grad_count
+    cast(regexp_replace(one_year_graduate_count,',','') as INT64) as one_yr_grad_count
 from ${ref("ca_doe_1_yr_graduation_rate")}
 where aggregate_level = 'S'
 
