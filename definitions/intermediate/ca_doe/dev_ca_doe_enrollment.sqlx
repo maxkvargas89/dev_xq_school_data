@@ -103,7 +103,8 @@ config {
     REGEXP_REPLACE(regexp_replace(REGEXP_REPLACE(grade,'_new',''),
         'Enr ',
         ''),'gr_','') AS grade,
-    CONCAT(ethnicity_race,' ',gender) AS reporting_category
+    CONCAT(ethnicity_race,' ',gender) AS reporting_category,
+    enrollment
   FROM
     cte3)
 UNION ALL (
@@ -222,6 +223,7 @@ UNION ALL (
     REGEXP_REPLACE(regexp_replace(REGEXP_REPLACE(grade,'_new',''),
         'Enr ',
         ''),'gr_','') AS grade,
-    reporting_category
+    reporting_category,
+    enrollment
   FROM
     cte3 )

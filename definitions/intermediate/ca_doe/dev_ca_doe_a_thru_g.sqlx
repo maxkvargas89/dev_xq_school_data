@@ -1,14 +1,16 @@
 config {
     type: "table",
-    description: "Cleaned up data corresponding to CA one-year graduation rates"
+    description: "Cleaned up data corresponding to CA grad outcomes"
 }
 
 select 
     academic_year as year,
-    concat(lpad(county_code,2),lpad(district_code,5),lpad(school_code,7)) as cds_code,
+    concat(lpad(county_code,2),lpad(cast(district_code as STRING),5),lpad(school_code,7)) as cds_code,
     county_name,
     district_name,
     school_name,
+    charter_school,
+    dass,
     (case when reporting_category = 'RB' then 'African American'
         when reporting_category = 'RI' then 'American Indian or Alaska Native'
         when reporting_category = 'RA' then 'Asian'
@@ -29,7 +31,8 @@ select
         when reporting_category = 'SF' then 'Foster'
         when reporting_category = 'SH' then 'Homeless'
         when reporting_category = 'TA' then 'Total' end) as reporting_category,
-    cast(regexp_replace(one_year_graduate_count,',','') as INT64) as one_yr_grad_count
-from ${ref("ca_doe_1_yr_graduation_rate")}
+    cast((case when met_uc_csu_grad_req_s_rate_ = '*' then '7.0' else met_uc_csu_grad_req_s_rate_ end) as DECIMAL) as a_g_grad_rate,
+    cast((case when golden_state_seal_merit_diploma_rate = '*' then '700.0' else golden_state_seal_merit_diploma_rate end) as DECIMAL) as golden_state_seal_grad_rate
+from ${ref("ca_doe_a_thru_g")}
 where aggregate_level = 'S'
 

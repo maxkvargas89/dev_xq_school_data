@@ -1,0 +1,20 @@
+config {
+    type: "table",
+    description: "Cleaned up data corresponding to CA AP courses"
+}
+
+with cte as (    
+    select *
+    from ${ref("ca_doe_ap_courses")}
+    unpivot(courses for ap_subject in (CSNAPC as 'Comp Sci',ENAPC as 'English',FPANAPC as 'Fine and Performing Arts',FLNAPC as 'Foreign Language',MNAPC as 'Mathematics',SNAPC as 'Science',SSNAPC as 'Social Studies',ALLNAPC as 'Total'))
+)
+
+select sarcyear as year,
+   cdscode,
+   coalesce(district_code,cast(d as string)) as district_code,
+   coalesce(school_code,s) as school_code,
+   ap_subject,
+   courses
+from cte
+where _file in ('new/ca_doe_ap_courses_22-23.csv','new/ca_doe_ap_courses_21-22.csv','advanced_courses/advanced_courses_20-21_ca.csv')
+limit 5
