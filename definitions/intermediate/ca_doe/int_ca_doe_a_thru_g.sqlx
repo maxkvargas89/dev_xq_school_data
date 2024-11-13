@@ -1,6 +1,6 @@
 config {
     type: "table",
-    description: "Cleaned up data corresponding to CA grad outcomes"
+    description: "Transformation of CA DOE file to dispaly counts and rates of students graduating with A-G and/or Golden Seal, at school level"
 }
 
 select 
@@ -31,8 +31,10 @@ select
         when reporting_category = 'SF' then 'Foster'
         when reporting_category = 'SH' then 'Homeless'
         when reporting_category = 'TA' then 'Total' end) as reporting_category,
-    cast((case when met_uc_csu_grad_req_s_rate_ = '*' then '7.0' else met_uc_csu_grad_req_s_rate_ end) as DECIMAL) as a_g_grad_rate,
-    cast((case when golden_state_seal_merit_diploma_rate = '*' then '700.0' else golden_state_seal_merit_diploma_rate end) as DECIMAL) as golden_state_seal_grad_rate
+    cast((case when met_uc_csu_grad_req_s_count_ = '*' then '0' else met_uc_csu_grad_req_s_count_ end) as DECIMAL) as count_a_g_grads,
+    cast((case when met_uc_csu_grad_req_s_rate_ = '*' then '700.0' else met_uc_csu_grad_req_s_rate_ end) as DECIMAL) as perc_a_g_grad,
+    cast((case when golden_state_seal_merit_diploma_count_ = '*' then '0' else golden_state_seal_merit_diploma_count_ end) as DECIMAL) as count_golden_state_seal_grads,
+    cast((case when golden_state_seal_merit_diploma_rate = '*' then '700.0' else golden_state_seal_merit_diploma_rate end) as DECIMAL) as perc_golden_state_seal_grad
 from ${ref("ca_doe_a_thru_g")}
 where aggregate_level = 'S'
 

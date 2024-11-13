@@ -1,0 +1,12 @@
+config {
+    type: "table",
+    description: "Transformation of CA DOE file to display percent of students in AP courses"
+}
+
+select sarcyear as year,
+    (case when cdscode is null then concat(lpad(district_code,7,'0'),lpad(school_code,7,'0'))
+    else cdscode end) as cds_code,
+    psiapc as perc_students_in_ap
+from ${ref("ca_doe_ap_courses")}
+where _file in ('new/ca_doe_ap_courses_22-23.csv','new/ca_doe_ap_courses_21-22.csv','advanced_courses/advanced_courses_20-21_ca.csv')
+order by perc_students_in_ap desc

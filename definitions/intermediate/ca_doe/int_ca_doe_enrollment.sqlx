@@ -1,6 +1,6 @@
 config {
     type: "table",
-    description: "Cleaned up data corresponding to CA enrollment"
+    description: "Transformation of CA DOE file to display disaggregated school level enrollment"
 }
 
   (
