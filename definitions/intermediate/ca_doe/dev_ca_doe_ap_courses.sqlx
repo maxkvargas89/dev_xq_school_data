@@ -1,6 +1,6 @@
 config {
     type: "table",
-    description: "Cleaned up data corresponding to CA AP courses"
+    description: "Cleaned up data corresponding to CA AP courses (needs school name)"
 }
 
 with cte as (    
@@ -10,11 +10,9 @@ with cte as (
 )
 
 select sarcyear as year,
-   cdscode,
-   coalesce(district_code,cast(d as string)) as district_code,
-   coalesce(school_code,s) as school_code,
+   (case when cdscode is null then concat(lpad(district_code,7,'0'),lpad(school_code,7,'0'))
+    else cdscode end) as cds_code,
    ap_subject,
    courses
 from cte
 where _file in ('new/ca_doe_ap_courses_22-23.csv','new/ca_doe_ap_courses_21-22.csv','advanced_courses/advanced_courses_20-21_ca.csv')
-limit 5
