@@ -13,6 +13,6 @@ select sarcyear as year,
    (case when cdscode is null then concat(lpad(district_code,7,'0'),lpad(school_code,7,'0'))
     else cdscode end) as cds_code,
    ap_subject,
-   courses
+   count_courses
 from cte
 where _file in ('new/ca_doe_ap_courses_22-23.csv','new/ca_doe_ap_courses_21-22.csv','advanced_courses/advanced_courses_20-21_ca.csv')

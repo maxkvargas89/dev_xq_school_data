@@ -104,7 +104,7 @@ config {
         'Enr ',
         ''),'gr_','') AS grade,
     CONCAT(ethnicity_race,' ',gender) AS reporting_category,
-    enrollment
+    enrollment as count_enrollment
   FROM
     cte3)
 UNION ALL (
@@ -224,6 +224,6 @@ UNION ALL (
         'Enr ',
         ''),'gr_','') AS grade,
     reporting_category,
-    enrollment
+    enrollment as count_enrollment
   FROM
     cte3 )
