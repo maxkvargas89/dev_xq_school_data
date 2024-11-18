@@ -1,7 +1,6 @@
 config {
     type: "table",
-    disabled: true,
-    description: "Transformation of CA DOE file to dispaly AP course counts at school level"
+    description: "Transformation of CA DOE file to dispaly AP course counts at school level (contains join)"
 }
 
 with cte as (    
@@ -11,9 +10,13 @@ with cte as (
 )
 
 select sarcyear as year,
-   (case when cdscode is null then concat(lpad(district_code,7,'0'),lpad(school_code,7,'0'))
-    else cdscode end) as cds_code,
+   (case when a.cdscode is null then concat(lpad(district_code,7,'0'),lpad(school_code,7,'0'))
+    else a.cdscode end) as cds_code,
+    b.county as county_name,
+    b.district as district_name,
+    b.school as school_name,
    ap_subject,
    count_courses
-from cte
+from cte as a 
+    inner join ${ref("ca_doe_school_list")} as b on a.cdscode = lpad(regexp_replace(b.cdscode,"'",""),14,'0')
 where _file in ('new/ca_doe_ap_courses_22-23.csv','new/ca_doe_ap_courses_21-22.csv','advanced_courses/advanced_courses_20-21_ca.csv')

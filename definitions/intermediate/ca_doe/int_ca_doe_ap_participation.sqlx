@@ -1,13 +1,15 @@
 config {
     type: "table",
-    disabled: true,
-    description: "Transformation of CA DOE file to display percent of students in AP courses"
+    description: "Transformation of CA DOE file to display percent of students in AP courses (contains join)"
 }
 
-select sarcyear as year,
-    (case when cdscode is null then concat(lpad(district_code,7,'0'),lpad(school_code,7,'0'))
-    else cdscode end) as cds_code,
+select a.sarcyear as year,
+    (case when a.cdscode is null then concat(lpad(district_code,7,'0'),lpad(school_code,7,'0'))
+    else a.cdscode end) as cds_code,
+    b.county as county_name,
+    b.district as district_name,
+    b.school as school_name,
     psiapc as perc_students_in_ap
-from ${ref("ca_doe_ap_courses")}
-where _file in ('new/ca_doe_ap_courses_22-23.csv','new/ca_doe_ap_courses_21-22.csv','advanced_courses/advanced_courses_20-21_ca.csv')
-order by perc_students_in_ap desc
+from ${ref("ca_doe_ap_courses")} as a 
+    inner join ${ref("ca_doe_school_list")} as b on a.cdscode = lpad(regexp_replace(b.cdscode,"'",""),14,'0')
+where a._file in ('new/ca_doe_ap_courses_22-23.csv','new/ca_doe_ap_courses_21-22.csv','advanced_courses/advanced_courses_20-21_ca.csv')

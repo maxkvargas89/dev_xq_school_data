@@ -1,11 +1,14 @@
 config {
     type: "table",
-    disabled: true,
-    description: "Transformation of CA DOE file to dispaly CTE course participation at school level"
+    description: "Transformation of CA DOE file to dispaly CTE course participation at school level (contains join)"
 }
 
 select sarcyear as year,
-   cdscode as cds_code,
+   a.cdscode as cds_code,
+   b.county as county_name,
+   b.district as district_name,
+   b.school as school_name,
    part as count_students_in_cte,
    comp as perc_students_complete_cte
-from ${ref("ca_doe_cte_participation")}
+from ${ref("ca_doe_cte_participation")} as a
+    inner join ${ref("ca_doe_school_list")} as b on a.cdscode = lpad(regexp_replace(b.cdscode,"'",""),14,'0')
