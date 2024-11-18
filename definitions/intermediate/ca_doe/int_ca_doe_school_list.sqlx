@@ -1,0 +1,25 @@
+config {
+    type: "table",
+    description: "Transformation of CA DOE file to display school directory info"
+}
+
+select cdscode as cds_code,
+  ncesschool,
+  county,
+  district,
+  zip,
+  latitude,
+  longitude,
+  school,
+  doctype as governance,
+  ed_ops_name as education_type,
+  charter,
+  magnet,
+  funding_type as funding,
+  (case when virtual = 'F' then 'Exclusively virtual'
+    when virtual = 'V' then 'Primarily virtual'
+    when virtual = 'C' then 'Primarily classroom'
+    when virtual = 'N' then 'Not virtual'
+    when virtual = 'P' then 'Partial virtual' end) as virtual
+from ${ref("ca_doe_school_list")}
+where soctype = 'High Schools (Public)' and status_type = 'Active'
