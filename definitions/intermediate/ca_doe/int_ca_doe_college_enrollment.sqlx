@@ -41,12 +41,12 @@ select academic_year as year,
         when reporting_category = 'GRK8' then 'Grades K–8' 
         when reporting_category = 'GR912' then 'Grades 9–12' 
         when reporting_category = 'GRUG' then 'Ungraded Elementary and Secondary (Retired in 2017–18)' end) as reporting_category,
-    (case when high_school_completers = '*' then '0' else high_school_completers end) as high_school_completers,
-    (case when enrolled_in_college_total_12_months_ = '*' then '0' else enrolled_in_college_total_12_months_ end) as count_enroll_college_12mos,
-    (case when college_going_rate_total_12_months_ = '*' then '700.0' else college_going_rate_total_12_months_ end) as perc_enroll_college_12mos,
-    (case when enrolled_uc_12_months_ = '*' then '0' else enrolled_uc_12_months_ end) as count_enroll_uc_12mos,
-    (case when enrolled_csu_12_months_ = '*' then '0' else enrolled_csu_12_months_ end) as count_enroll_csu_12mos,
-    (case when enrolled_ccc_12_months_ = '*' then '0' else enrolled_ccc_12_months_ end) as count_enroll_ca_cc_12mos,
+    cast((case when high_school_completers = '*' then '0' else high_school_completers end) as INT64) as high_school_completers,
+   cast((case when enrolled_in_college_total_12_months_ = '*' then '0' else enrolled_in_college_total_12_months_ end) as INT64) as count_enroll_college_12mos,
+   cast((case when college_going_rate_total_12_months_ = '*' then '700.0' else college_going_rate_total_12_months_ end) as DECIMAL) as perc_enroll_college_12mos,
+    cast((case when enrolled_uc_12_months_ = '*' then '0' else enrolled_uc_12_months_ end) as INT64) as count_enroll_uc_12mos,
+    cast((case when enrolled_csu_12_months_ = '*' then '0' else enrolled_csu_12_months_ end) as INT64) as count_enroll_csu_12mos,
+    cast((case when enrolled_ccc_12_months_ = '*' then '0' else enrolled_ccc_12_months_ end) as INT64) as count_enroll_ca_cc_12mos,
 from ${ref("ca_doe_college_enrollment")}
 where aggregate_level = 'S'
 
