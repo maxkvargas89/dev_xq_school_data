@@ -3,7 +3,7 @@ config {
     description: "Transformation of CA DOE file to display school directory info"
 }
 
-select cdscode as cds_code,
+select lpad(regexp_replace(cdscode,"'",""),14,'0') as cds_code,
   ncesschool,
   county,
   district,
