@@ -9,7 +9,7 @@ select
     county_name,
     district_name,
     school_name,
-    charter_school,
+    charter_school as charter,
     dass,
     (case when reporting_category = 'RB' then 'African American'
         when reporting_category = 'RI' then 'American Indian or Alaska Native'
