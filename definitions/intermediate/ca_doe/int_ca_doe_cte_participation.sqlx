@@ -1,0 +1,11 @@
+config {
+    type: "table",
+    disabled: true,
+    description: "Transformation of CA DOE file to dispaly CTE course participation at school level"
+}
+
+select sarcyear as year,
+   cdscode as cds_code,
+   part as count_students_in_cte,
+   comp as perc_students_complete_cte
+from ${ref("ca_doe_cte_participation")}
