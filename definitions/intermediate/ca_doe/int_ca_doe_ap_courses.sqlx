@@ -6,7 +6,7 @@ config {
 with cte as (    
     select *
     from ${ref("ca_doe_ap_courses")}
-    unpivot(courses for ap_subject in (CSNAPC as 'Comp Sci',ENAPC as 'English',FPANAPC as 'Fine and Performing Arts',FLNAPC as 'Foreign Language',MNAPC as 'Mathematics',SNAPC as 'Science',SSNAPC as 'Social Studies',ALLNAPC as 'Total'))
+    unpivot(count_courses for ap_subject in (CSNAPC as 'Comp Sci',ENAPC as 'English',FPANAPC as 'Fine and Performing Arts',FLNAPC as 'Foreign Language',MNAPC as 'Mathematics',SNAPC as 'Science',SSNAPC as 'Social Studies',ALLNAPC as 'Total'))
 )
 
 select sarcyear as year,
