@@ -1,5 +1,6 @@
 config {
     type: "table",
+    disabled: true,
     description: "Transformation of CA DOE file to display percent of students in AP courses"
 }
 
