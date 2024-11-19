@@ -1,8 +1,0 @@
-config {
-    type: "table",
-    description: "Cleaned up data corresponding to DC SAT benchmarks"
-}
-
-select
-  *
-from ${ref("dcps_eoa_20-21")}
