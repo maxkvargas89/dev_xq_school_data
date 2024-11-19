@@ -1,6 +1,6 @@
 config {
     type: "table",
-    description: "Cleaned up data corresponding to CA grad outcomes"
+    description: "Transformation of CA DOE file to dispaly stability counts and rates at school level"
 }
 
 select 
@@ -9,7 +9,7 @@ select
     county_name,
     district_name,
     school_name,
-    charter_school,
+    charter_school as charter,
     dass,
     (case when reporting_category = 'RB' then 'African American'
         when reporting_category = 'RI' then 'American Indian or Alaska Native'
@@ -31,8 +31,9 @@ select
         when reporting_category = 'SF' then 'Foster'
         when reporting_category = 'SH' then 'Homeless'
         when reporting_category = 'TA' then 'Total' end) as reporting_category,
-    cast((case when met_uc_csu_grad_req_s_rate_ = '*' then '7.0' else met_uc_csu_grad_req_s_rate_ end) as DECIMAL) as a_g_grad_rate,
-    cast((case when golden_state_seal_merit_diploma_rate = '*' then '700.0' else golden_state_seal_merit_diploma_rate end) as DECIMAL) as golden_state_seal_grad_rate
-from ${ref("ca_doe_a_thru_g")}
+    cast((case when adjusted_cumulative_enrollment = '*' then '0' else adjusted_cumulative_enrollment end) as INT64) as count_enrollment,
+    cast((case when stability_count = '*' then '0' else stability_count end) as INT64) as count_stable_students,
+    cast((case when stability_rate_percent_ = '*' then '700.0' else stability_rate_percent_ end) as DECIMAL) as perc_stable_students
+from ${ref("ca_doe_stability_rate")}
 where aggregate_level = 'S'
 

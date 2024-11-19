@@ -1,0 +1,40 @@
+config {
+    type: "table",
+    description: "Transformation of CA DOE file to dispaly counts and rates of students graduating with A-G and/or Golden Seal, at school level"
+}
+
+select 
+    academic_year as year,
+    concat(lpad(county_code,2),lpad(cast(district_code as STRING),5),lpad(school_code,7)) as cds_code,
+    county_name,
+    district_name,
+    school_name,
+    charter_school as charter,
+    dass,
+    (case when reporting_category = 'RB' then 'African American'
+        when reporting_category = 'RI' then 'American Indian or Alaska Native'
+        when reporting_category = 'RA' then 'Asian'
+        when reporting_category = 'RF' then 'Filipino'
+        when reporting_category = 'RH' then 'Hispanic or Latino'
+        when reporting_category = 'RD' then 'Not Reported'
+        when reporting_category = 'RP' then 'Pacific Islander'
+        when reporting_category = 'RT' then 'Two or More Races'
+        when reporting_category = 'RW' then 'White'
+        when reporting_category = 'GM' then 'Male'
+        when reporting_category = 'GF' then 'Female'
+        when reporting_category = 'GX' then 'Non-Binary Gender (Beginning 2019–20)'
+        when reporting_category = 'GZ' then 'Missing Gender'
+        when reporting_category = 'SE' then 'English Learners'
+        when reporting_category = 'SD' then 'Students with Disabilities'
+        when reporting_category = 'SS' then 'Socioeconomically Disadvantaged'
+        when reporting_category = 'SM' then 'Migrant'
+        when reporting_category = 'SF' then 'Foster'
+        when reporting_category = 'SH' then 'Homeless'
+        when reporting_category = 'TA' then 'Total' end) as reporting_category,
+    cast((case when met_uc_csu_grad_req_s_count_ = '*' then '0' else met_uc_csu_grad_req_s_count_ end) as DECIMAL) as count_a_g_grads,
+    cast((case when met_uc_csu_grad_req_s_rate_ = '*' then '700.0' else met_uc_csu_grad_req_s_rate_ end) as DECIMAL) as perc_a_g_grad,
+    cast((case when golden_state_seal_merit_diploma_count_ = '*' then '0' else golden_state_seal_merit_diploma_count_ end) as DECIMAL) as count_golden_state_seal_grads,
+    cast((case when golden_state_seal_merit_diploma_rate = '*' then '700.0' else golden_state_seal_merit_diploma_rate end) as DECIMAL) as perc_golden_state_seal_grad
+from ${ref("ca_doe_a_thru_g")}
+where aggregate_level = 'S'
+

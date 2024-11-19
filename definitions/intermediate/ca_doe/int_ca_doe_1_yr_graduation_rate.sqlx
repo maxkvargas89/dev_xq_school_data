@@ -1,6 +1,6 @@
 config {
     type: "table",
-    description: "Cleaned up data corresponding to CA one-year graduation rates"
+    description: "Tranformation of CA DOE file to display one-year graduation rates at the school level"
 }
 
 select 
@@ -29,7 +29,7 @@ select
         when reporting_category = 'SF' then 'Foster'
         when reporting_category = 'SH' then 'Homeless'
         when reporting_category = 'TA' then 'Total' end) as reporting_category,
-    cast(regexp_replace(one_year_graduate_count,',','') as INT64) as one_yr_grad_count
+    cast(regexp_replace(one_year_graduate_count,',','') as INT64) as count_one_yr_grads
 from ${ref("ca_doe_1_yr_graduation_rate")}
 where aggregate_level = 'S'
 

@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: "xq-data-bigquery",
+  schema: "staging_xq_school_data",
+  name: "ca_doe_chronic_absenteeism",
+  description: "chronic absenteeism counts and rates"
+}
