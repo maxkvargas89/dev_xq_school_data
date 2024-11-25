@@ -1,0 +1,8 @@
+config {
+    type: "table",
+    description: "Cleaned up data corresponding to DC SAT benchmarks"
+}
+
+select
+  *
+from ${ref("dc_doe_sat_benchmarks")}

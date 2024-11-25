@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: "xq-data-bigquery",
+  schema: "staging_xq_school_data",
+  name: "dc_doe_parcc_proficiency",
+  description: "DC parcc proficiency"
+}
