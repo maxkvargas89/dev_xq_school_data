@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: "xq-data-bigquery",
+  schema: "staging_xq_school_data",
+  name: "ca_doe_cast_proficiency",
+  description: "CA science assessment results"
+}
