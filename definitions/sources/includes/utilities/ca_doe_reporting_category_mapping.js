@@ -32,7 +32,14 @@ function applyCodeMapping (type) {
     "Non-traditional adult students enrolled in K-12 grades who are 23 to 29 years old":   ['"AR_2329"'],
     "Non-traditional adult students enrolled in K-12 grades who are 30 to 39 years old":   ['"AR_3039"'],
     "Non-traditional adult students enrolled in K-12 grades who are 40 to 49 years old":   ['"AR_4049"'],
-    "Non-traditional adult students enrolled in K-12 grades who are 50 or more years old": ['"AR_50P"']
+    "Non-traditional adult students enrolled in K-12 grades who are 50 or more years old": ['"AR_50P"'],
+    "Kindergarten (GRK prior to 2020–21)": ['"GRKN"'],
+    "Grades 1–3": ['"GR13"'],
+    "Grades 4–6": ['"GR46"'],
+    "Grades 7–8": ['"GR78"'],
+    "Grades K–8": ['"GRK8"'],
+    "Grades 9–12": ['"GR912"'],
+    "Ungraded Elementary and Secondary (Retired in 2017–18)": ['"GRUG"']
   }
 
   const codeMapKeys = Object.keys(codeMap) 
