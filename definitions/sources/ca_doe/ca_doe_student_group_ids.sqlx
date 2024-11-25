@@ -1,7 +1,0 @@
-config {
-  type: "declaration",
-  database: "xq-data-bigquery",
-  schema: "staging_xq_school_data",
-  name: "ca_doe_student_group_ids",
-  description: "student group names and descriptions"
-}
