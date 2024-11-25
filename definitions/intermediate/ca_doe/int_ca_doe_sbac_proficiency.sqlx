@@ -3,5 +3,61 @@ config {
     description: "Tranformation of CA DOE file to display CA ela and math assessment results at the school level"
 }
 
+js {
+  const { applyCodeMapping } = require("definitions/sources/includes/utilities/ca_doe_student_group_mapping")
+}
+
+SELECT * FROM (
+
+(
+with cte as 
+(
+  select *, lpad(cast(coalesce(subgroup_id) as STRING),3,'0') as adj_student_group_id
+  FROM ${ref("ca_doe_sbac_proficiency_archived")}
+)
+
 SELECT 
-  
+  concat(test_year-1,'-',right(cast(test_year as string),2)) as year,
+  concat(a.county_code,a.district_code,a.school_code) as cds_code,
+  b.county as county_name,
+  b.district as district_name,
+  b.school as school_name,
+  grade,
+  ${applyCodeMapping('adj_student_group_id')} as student_group_name,
+cast((case when students_tested = '*' then '0' else students_tested end) as INT64) as count_students_tested,
+cast((case when mean_scale_score = '*' then '700.0' else mean_scale_score end) as DECIMAL) as avg_score,
+cast((case when percentage_standard_nearly_met = '*' then '700.0' else percentage_standard_nearly_met end) as DECIMAL) as perc_nearly_met_standard,
+cast((case when percentage_standard_met = '*' then '700.0' else percentage_standard_met end) as DECIMAL) as perc_met_standard,
+cast((case when percentage_standard_exceeded = '*' then '700.0' else percentage_standard_exceeded end) as DECIMAL) as perc_exceeded_standard
+FROM cte as a
+  inner join ${ref("ca_doe_school_list")} as b on concat(a.county_code,a.district_code,a.school_code) = lpad(regexp_replace(b.cdscode,"'",""),14,'0')
+where a.school_code <> '0000000'
+)
+
+UNION ALL
+
+(
+with cte as 
+(
+  select *, lpad(cast(coalesce(student_group_id) as STRING),3,'0') as adj_student_group_id
+  FROM ${ref("ca_doe_sbac_proficiency")}
+)
+
+SELECT 
+  concat(test_year-1,'-',right(cast(test_year as string),2)) as year,
+  concat(a.county_code,a.district_code,a.school_code) as cds_code,
+  b.county as county_name,
+  b.district as district_name,
+  b.school as school_name,
+  grade,
+  ${applyCodeMapping('adj_student_group_id')} as student_group_name,
+cast((case when coalesce(students_tested,total_students_tested) = '*' then '0' else coalesce(students_tested,total_students_tested) end) as INT64) as count_students_tested,
+cast((case when mean_scale_score = '*' then '700.0' else mean_scale_score end) as DECIMAL) as avg_score,
+cast((case when percentage_standard_nearly_met = '*' then '700.0' else percentage_standard_nearly_met end) as DECIMAL) as perc_nearly_met_standard,
+cast((case when percentage_standard_met = '*' then '700.0' else percentage_standard_met end) as DECIMAL) as perc_met_standard,
+cast((case when percentage_standard_exceeded = '*' then '700.0' else percentage_standard_exceeded end) as DECIMAL) as perc_exceeded_standard
+FROM cte as a
+  inner join ${ref("ca_doe_school_list")} as b on concat(a.county_code,a.district_code,a.school_code) = lpad(regexp_replace(b.cdscode,"'",""),14,'0')
+where a.school_code <> '0000000'
+)
+)
