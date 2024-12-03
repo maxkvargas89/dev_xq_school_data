@@ -1,0 +1,20 @@
+config {
+    type: "table",
+    description: "Tranformation of NY DOE file to display college going types at the school level"
+}
+
+select 
+  concat(cast(right(membership_desc,4) as INT64) - 1,'-',right(membership_desc,2)) as year,
+  entity_cd,
+  entity_name as school_name,
+  subgroup_name as subgroup,
+  cast(total_grad_count as INT64) as count_graduates,
+  cast((case when nys_pub_2_yr_cnt = 's' then '0' else nys_pub_2_yr_cnt end) as INT64) as count_enroll_2yr_nypublic,
+  cast((case when nys_pub_4_yr_cnt = 's' then '0' else nys_pub_4_yr_cnt end) as INT64) as count_enroll_4yr_nypublic,
+  cast((case when nys_pvt_2_yr_cnt = 's' then '0' else nys_pvt_2_yr_cnt end) as INT64) as count_enroll_2yr_nyprivate,
+  cast((case when nys_pvt_4_yr_cnt = 's' then '0' else nys_pvt_4_yr_cnt end) as INT64) as count_enroll_4yr_nyprivate,
+  cast((case when out_2_yr_cnt = 's' then '0' else out_2_yr_cnt end) as INT64) as count_enroll_2yr_outofstate,
+  cast((case when out_4_yr_cnt = 's' then '0' else out_4_yr_cnt end) as INT64) as count_enroll_4yr_outofstate
+from ${ref("ny_doe_college_enrollment")}
+where entity_cd not like '0000%' 
+  and entity_cd not like '%00'

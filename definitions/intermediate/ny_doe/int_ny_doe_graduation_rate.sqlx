@@ -1,0 +1,17 @@
+config {
+    type: "table",
+    description: "Transformation of NY DOE file to display disaggregated 4-year graduation counts and rates"
+}
+
+select 
+  concat(cast(year - 1 as STRING),"-",right(cast(year as STRING),2)) as year,
+  entity_cd,
+  entity_name as school_name,
+  subgroup_name as subgroup,
+  cast((case when cohort_count = 's' then '0' else cohort_count end) as INT64) as count_cohort,
+  cast((case when grad_count = 's' then '0' else grad_count end) as INT64) as count_graduates,
+  cast((case when grad_rate = 's' then '700.0' else grad_rate end) as DECIMAL) as perc_graduate
+from ${ref("ny_doe_graduation_rate")}
+where cohort = '4-Year'
+  and entity_cd not like '0000%' 
+  and entity_cd not like '%00' 

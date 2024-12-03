@@ -1,0 +1,21 @@
+config {
+    type: "table",
+    description: "Transformation of NY DOE file to display disaggregated AP and IB course enrollment"
+}
+
+select 
+  cast(round(state_location_id,0) as STRING) as state_location_id,
+  report_school_year as year,
+  (case when county_desc is null then "Charter" else initcap(county_desc) end) as county_name,
+  initcap(district_name) as district_name,
+  initcap(location_name) as school_name,
+  initcap(needs_resource_desc) as school_type,
+  student_gender as gender,
+  ethnic_desc_rc as ethnicity,
+  apib_ind as course_type,
+  subject_area,
+  grade_level as grade,
+  ecodis_ind + ell_ind + swd_ind as count_disadvantaged_enrolled,
+  student_count as count_enrolled
+from ${ref("ny_doe_ap_ib_course_enrollment")}
+where grade_level in ('9th Grade','10th Grade','11th Grade','12th Grade')
