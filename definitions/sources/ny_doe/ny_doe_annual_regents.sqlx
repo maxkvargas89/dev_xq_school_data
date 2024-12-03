@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: "xq-data-bigquery",
+  schema: "staging_xq_school_data",
+  name: "ny_doe_annual_regents",
+  description: "NY regent tests results by school year"
+}

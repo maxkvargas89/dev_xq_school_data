@@ -1,0 +1,43 @@
+config {
+    type: "table",
+    description: "Transformation of NY DOE file to display disaggregated school level enrollment"
+}
+
+with cte1 as 
+(
+select entity_cd, entity_name, year,
+  num_am_ind as native_american,
+  num_armed as armed_forces_parent, 
+  num_asian as asian, 
+  num_black as black, 
+  num_ecdis as economically_disadvantaged, 
+  num_ell as english_learner, 
+  num_female as female, 
+  num_foster as foster, 
+  num_hisp as hispanic, 
+  num_homeless as homeless, 
+  num_male as male, 
+  num_migrant as migrant, 
+  num_multi as multi_racial, 
+  num_nonbinary as non_binary, 
+  num_swd as student_with_disabilities, 
+  num_white as white
+from ${ref("ny_doe_enrollment")}
+),
+
+cte2 as 
+(  
+select *
+from cte1
+unpivot(counts for subgroup in (native_american,armed_forces_parent, asian, black, economically_disadvantaged, english_learner, female, foster, hispanic, homeless, male, migrant, multi_racial, non_binary, student_with_disabilities, white))
+)
+
+select 
+  concat(cast(year - 1 as STRING),"-",right(cast(year as STRING),2)) as year,
+  entity_cd, 
+  entity_name as school_name,
+  initcap(regexp_replace(subgroup,"_"," ")) as subgroup,
+  counts as count_enrollment
+from cte2
+where entity_cd not like '0000%' 
+  and entity_cd not like '%00' 

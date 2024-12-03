@@ -1,0 +1,16 @@
+config {
+    type: "table",
+    description: "Tranformation of NY DOE file to display chronic absenteeism counts and rates at the school level"
+}
+
+select 
+  concat(cast(year - 1 as STRING),"-",right(cast(year as STRING),2)) as year,
+  entity_cd,
+  entity_name as school_name,
+  subgroup_name as subgroup,
+  cast((case when absent_count = 's' then '0' else absent_count end) as INT64) as count_chronic_absenteeism,
+  cast((case when enrollment = 's' then '0' else enrollment end) as INT64) as count_enrollment,
+  cast((case when absent_rate = 's' then '700.0' else absent_rate end) as DECIMAL) as perc_chronic_absenteeism
+from ${ref("ny_doe_chronic_absenteeism")}
+where entity_cd not like '0000%' 
+  and entity_cd not like '%00'

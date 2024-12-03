@@ -1,0 +1,18 @@
+config {
+    type: "table",
+    description: "Tranformation of NY DOE file to display high school graduate course of study pathways at the school level"
+}
+
+select 
+  report_school_year as year,
+  county_name,
+  lea_name as district_name,
+  aggregation_code as entity_cd,
+  aggregation_name as school_name,
+  subgroup_name as subgroup,
+  course_of_study,
+  cast((case when student_count = '-' then '0' else student_count end) as DECIMAL) as count_students
+from ${ref("ny_doe_career_pathways")}
+where membership_desc like '%4 Year Outcome'
+  and aggregation_code not like '0000%' 
+  and aggregation_code not like '%00'
