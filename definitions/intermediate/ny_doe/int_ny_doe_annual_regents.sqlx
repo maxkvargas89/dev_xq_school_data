@@ -1,0 +1,22 @@
+config {
+    type: "table",
+    description: "Tranformation of NY DOE file to display annual regents results at the school level"
+}
+
+select 
+  concat(year-1,'-',right(cast(year as STRING),2)) as year,
+  entity_cd,
+  entity_name as school_name,
+  subgroup_name as subgroup,
+  subject,
+  tested as count_tested,
+  cast((case when per_level_1 = 's' then '700.0' else per_level_1 end) as DECIMAL) as perc_score_1,
+  cast((case when per_level_2 = 's' then '700.0' else per_level_2 end) as DECIMAL) as perc_score_2,
+  cast((case when per_level_3 = 's' then '700.0' else per_level_3 end) as DECIMAL) as perc_score_3,
+  cast((case when per_level_4 = 's' then '700.0' else per_level_4 end) as DECIMAL) as perc_score_4,
+  cast((case when per_level_5 = 's' then '700.0' else per_level_5 end) as DECIMAL) as perc_score_5,
+  cast((case when per_prof = 's' then '700.0' else per_prof end) as DECIMAL) as perc_proficient
+from ${ref("ny_doe_annual_regents")}
+where entity_cd not like '0000%' 
+  and entity_cd not like '%00'
+  and entity_cd <> '111111111111'

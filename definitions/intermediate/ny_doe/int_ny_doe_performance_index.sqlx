@@ -1,0 +1,17 @@
+config {
+    type: "table",
+    description: "Transformation of NY DOE file to display disaggregated school subject performance indexes"
+}
+
+select 
+  concat(year-1,'-',right(cast(year as STRING),2)) as year,
+  entity_cd,
+  entity_name as school_name,
+  subgroup_name as subgroup,
+  subject,
+  cast((case when core_cohort = 's' then '0' else core_cohort end) as DECIMAL) as count_cohort,
+  cast((case when core_index = 's' then '0' else core_index end) as DECIMAL) as index_core,
+  cast((case when weighted_index = 's' then '0' else weighted_index end) as DECIMAL) as index_weighted
+from ${ref('ny_doe_performance_index')}
+where entity_cd not like '0000%' 
+  and entity_cd not like '%00'
