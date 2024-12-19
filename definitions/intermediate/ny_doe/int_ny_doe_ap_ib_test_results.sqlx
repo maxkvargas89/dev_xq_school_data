@@ -1,0 +1,26 @@
+config {
+    type: "table",
+    description: "Transformation of NY DOE file to display disaggregated AP and IB test results (at district or charter level)"
+}
+
+select 
+  aggregation_code as entity_cd,
+  concat(concat('20',left(right(_file,9),2)),'-',left(right(_file,6),2)) as year,
+  county_desc as county_name,
+  initcap(aggregation_name) as school_name,
+  initcap(needs_resource_desc) as school_type,
+  subgroup_name as subgroup,
+  apib_ind as course_type,
+  item_subject_area as subject_area,
+  item_desc as test_name,
+  grade_level as grade,
+  cast((case when level_1_cnt = '-' then '0' else level_1_cnt end) as INT64) as count_score_1,
+  cast((case when level_2_cnt = '-' then '0' else level_2_cnt end) as INT64) as count_score_2,
+  cast((case when level_3_cnt = '-' then '0' else level_3_cnt end) as INT64) as count_score_3,
+  cast((case when level_4_cnt = '-' then '0' else level_4_cnt end) as INT64) as count_score_4,
+  cast((case when level_5_cnt = '-' then '0' else level_5_cnt end) as INT64) as count_score_5,
+  cast((case when level_6_cnt = '-' then '0' else level_6_cnt end) as INT64) as count_score_6,
+  cast((case when level_7_cnt = '-' then '0' else level_7_cnt end) as INT64) as count_score_7,
+  cast((case when proficient_student_cnt = '-' then '0' else proficient_student_cnt end) as INT64) as count_proficient
+from ${ref("ny_doe_ap_ib_test_results")}
+where grade_level not in ('Not HS') and aggregation_type = 4.0

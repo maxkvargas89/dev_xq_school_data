@@ -1,0 +1,23 @@
+config {
+    type: "table",
+    description: "Tranformation of NY DOE file to display cohort regents results at the school level"
+}
+
+select 
+  cohort,
+  entity_cd,
+  entity_name as school_name,
+  subgroup_name as subgroup,
+  subject,
+  cohort_count as count_cohort,
+  ntest_count as count_tested,
+  cast((case when level_1_count = 's' then '0' else level_1_count end) as INT64) as count_score_1,
+  cast((case when level_2_count = 's' then '0' else level_2_count end) as INT64) as count_score_2,
+  cast((case when level_3_count = 's' then '0' else level_3_count end) as INT64) as count_score_3,
+  cast((case when level_4_count = 's' then '0' else level_4_count end) as INT64) as count_score_4,
+  cast((case when prof_count = 's' then '0' else prof_count end) as INT64) as count_proficient,
+  cast((case when prof_cohort = 's' then '700.0' else prof_cohort end) as DECIMAL) as perc_proficient
+from ${ref("ny_doe_cohort_regents")}
+where entity_cd not like '0000%' 
+  and entity_cd not like '%00'
+  and entity_cd <> '111111111111'

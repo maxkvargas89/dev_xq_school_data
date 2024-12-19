@@ -1,0 +1,16 @@
+config {
+    type: "table",
+    description: "Transformation of NY DOE file to display disaggregated school accountability status"
+}
+
+select 
+year,
+entity_cd, 
+entity_name, 
+subgroup_name as subgroup,
+overall_status as score_overall_accountability,
+made_progress as flag_progress
+from ${ref("ny_doe_accountability")}
+where school_type = 'HS' 
+    and entity_cd not like '0000%' 
+    and entity_cd not like '%00'

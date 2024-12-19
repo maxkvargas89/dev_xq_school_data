@@ -3,5 +3,5 @@ config {
   database: "xq-data-bigquery",
   schema: "staging_xq_school_data",
   name: "ny_doe_ap_ib_test_results",
-  description: "NY ap/ib test results disaggregated by student group"
+  description: "NY ap/ib test results disaggregated by student group (at district level only)"
 }
