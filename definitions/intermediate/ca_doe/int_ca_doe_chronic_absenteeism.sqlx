@@ -15,9 +15,9 @@ select academic_year as year,
     coalesce(charter_yn,charter_school) as charter,
     dass,
     ${applyCodeMapping('reporting_category')} as reporting_category,
-    (case when chronic_absenteeism_count = '*' then '0' else chronic_absenteeism_count end) as count_chronic_absenteeism,
-    (case when coalesce(chronic_absenteeism_eligible_cumula,chronic_absenteeism_eligible_cumulative_enrollment) = '*' then '0' else coalesce(chronic_absenteeism_eligible_cumula,chronic_absenteeism_eligible_cumulative_enrollment) end) as count_total_enrollment,
-    (case when chronic_absenteeism_rate = '*' then '700.0' else chronic_absenteeism_rate end) as perc_chronic_absenteeism
+    cast((case when chronic_absenteeism_count = '*' then '0' else chronic_absenteeism_count end) as INT64) as count_chronic_absenteeism,
+    cast((case when coalesce(chronic_absenteeism_eligible_cumula,chronic_absenteeism_eligible_cumulative_enrollment) = '*' then '0' else coalesce(chronic_absenteeism_eligible_cumula,chronic_absenteeism_eligible_cumulative_enrollment) end) as INT64) as count_total_enrollment,
+    cast((case when chronic_absenteeism_rate = '*' then '700.0' else chronic_absenteeism_rate end) as DECIMAL) as perc_chronic_absenteeism
 from ${ref("ca_doe_chronic_absenteeism")}
 where aggregate_level = 'S'
 
