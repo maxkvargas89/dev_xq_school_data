@@ -1,6 +1,7 @@
 config {
     type: "table",
-    description: "Transformation of CA DOE file to dispaly counts and rates of students graduating with A-G and/or Golden Seal, at school level"
+    description: "Transformation of CA DOE file to dispaly counts and rates of students graduating with A-G and/or Golden Seal, at school level",
+    tags: ["ca"]
 }
 
 js {

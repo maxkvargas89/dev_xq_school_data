@@ -1,6 +1,7 @@
 config {
     type: "table",
-    description: "Transformation of NY DOE file to display disaggregated AP and IB test results (at district or charter level)"
+    description: "Transformation of NY DOE file to display disaggregated AP and IB test results (at district or charter level)",
+    tags: ["ny"]
 }
 
 select 
