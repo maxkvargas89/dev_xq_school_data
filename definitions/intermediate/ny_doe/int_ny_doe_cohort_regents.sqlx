@@ -1,6 +1,7 @@
 config {
     type: "table",
-    description: "Tranformation of NY DOE file to display cohort regents results at the school level"
+    description: "Tranformation of NY DOE file to display cohort regents results at the school level",
+    tags: ["ny"]
 }
 
 select 

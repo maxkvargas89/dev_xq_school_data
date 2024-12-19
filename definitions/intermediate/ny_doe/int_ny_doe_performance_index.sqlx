@@ -1,6 +1,7 @@
 config {
     type: "table",
-    description: "Transformation of NY DOE file to display disaggregated school subject performance indexes"
+    description: "Transformation of NY DOE file to display disaggregated school subject performance indexes",
+    tags: ["ny"]
 }
 
 select 
