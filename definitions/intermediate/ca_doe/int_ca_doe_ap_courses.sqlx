@@ -1,6 +1,7 @@
 config {
     type: "table",
-    description: "Transformation of CA DOE file to dispaly AP course counts at school level (contains join)"
+    description: "Transformation of CA DOE file to dispaly AP course counts at school level (contains join)",
+    tags: ["ca"]
 }
 
 with cte as (    

@@ -1,6 +1,7 @@
 config {
     type: "table",
-    description: "Transformation of CA DOE file to display school directory info"
+    description: "Transformation of CA DOE file to display school directory info",
+    tags: ["ca"]
 }
 
 select lpad(regexp_replace(cdscode,"'",""),14,'0') as cds_code,

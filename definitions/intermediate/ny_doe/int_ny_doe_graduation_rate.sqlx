@@ -1,6 +1,7 @@
 config {
     type: "table",
-    description: "Transformation of NY DOE file to display disaggregated 4-year graduation counts and rates"
+    description: "Transformation of NY DOE file to display disaggregated 4-year graduation counts and rates",
+    tags: ["ny"]
 }
 
 select 
