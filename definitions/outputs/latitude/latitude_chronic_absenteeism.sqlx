@@ -1,0 +1,15 @@
+config {
+    type: "table",
+    schema: "dataform_outputs_xq_school_data",
+    description: "Latitude chronic absenteeism rates, over time, compared to OUSD schools",
+    tags: ["latitude"]
+}
+
+select year, school_name, reporting_category, perc_chronic_absenteeism
+from ${ref("int_ca_doe_chronic_absenteeism")}
+where 
+  (district_name like '%Oakland%' or school_name like '%Latitude%')
+  and reporting_category in ('African American','English Learners','Hispanic or Latino','Socioeconomically Disadvantaged','Students with Disabilities','Total','Two or More Races','White')
+  and perc_chronic_absenteeism <> 700
+order by school_name, reporting_category, year
+
