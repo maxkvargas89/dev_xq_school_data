@@ -1,0 +1,23 @@
+config {
+    type: "table",
+    schema: "dataform_outputs_xq_school_data",
+    description: "Latitude test results rates, over time, compared to OUSD schools",
+    tags: ["latitude"]
+}
+
+select *
+from ${ref("int_ca_doe_sbac_proficiency")}
+where 
+  (district_name like '%Oakland%' or school_name like '%Latitude%')
+  and avg_score <> 700.0
+  and grade = 11
+
+union ALL
+
+select *
+from ${ref("int_ca_doe_cast_proficiency")}
+where 
+  (district_name like '%Oakland%' or school_name like '%Latitude%')
+  and avg_score <> 700.0
+  and grade = 11
+order by school_name, student_group_name, year 
