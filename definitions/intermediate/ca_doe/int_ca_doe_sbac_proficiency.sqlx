@@ -25,6 +25,8 @@ SELECT
   b.school as school_name,
   grade,
   ${applyCodeMapping('adj_student_group_id')} as student_group_name,
+  (case when test_id = 1 then 'ELA'
+    when test_id = 2 then 'Math' end) as test_subject,
 cast((case when students_tested = '*' then '0' else students_tested end) as INT64) as count_students_tested,
 cast((case when mean_scale_score = '*' then '700.0' else mean_scale_score end) as DECIMAL) as avg_score,
 cast((case when percentage_standard_nearly_met = '*' then '700.0' else percentage_standard_nearly_met end) as DECIMAL) as perc_nearly_met_standard,
@@ -52,6 +54,8 @@ SELECT
   b.school as school_name,
   grade,
   ${applyCodeMapping('adj_student_group_id')} as student_group_name,
+  (case when test_id = 1 then 'ELA'
+    when test_id = 2 then 'Math' end) as test_subject,
 cast((case when coalesce(students_tested,total_students_tested) = '*' then '0' else coalesce(students_tested,total_students_tested) end) as INT64) as count_students_tested,
 cast((case when mean_scale_score = '*' then '700.0' else mean_scale_score end) as DECIMAL) as avg_score,
 cast((case when percentage_standard_nearly_met = '*' then '700.0' else percentage_standard_nearly_met end) as DECIMAL) as perc_nearly_met_standard,
