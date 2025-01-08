@@ -1,0 +1,16 @@
+config {
+    type: "table",
+    description: "Cleaned up data corresponding to DC AP and IB participation"
+}
+
+SELECT (case when length(school_year) = 4 then concat(cast(school_year as INT64) - 1,'-',right(school_year,2))
+  when left(school_year,2) = 'SY' then right(school_year,7)
+  else school_year 
+  end) as year, 
+  concat(lea_code,lpad(cast(school_code as STRING),4,'0000')) as lea_school_id,
+  lea_name as district_name, school_name, student_group, 
+  cast((case when metric_n in ('n<10','DS') then '0' else metric_n end) as INT64) as count_students, 
+  cast((case when metric_score in ('n<10','DS') or metric_score like '%<%' or metric_score like '%>%' or metric_score like '%=%' then '700.0' else metric_score end) as DECIMAL) as perc_ap_ib_participation
+from ${ref("dc_doe_ap_ib_participation")}
+where (metric like '%AP/IB Participation%' or metric like 'Advanced Coursework Participation%') 
+order by school_year, school_name, student_group

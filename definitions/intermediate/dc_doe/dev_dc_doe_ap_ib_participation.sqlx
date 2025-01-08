@@ -1,8 +1,0 @@
-config {
-    type: "table",
-    description: "Cleaned up data corresponding to DC AP and IB participation"
-}
-
-select
-  *
-from ${ref("dc_doe_ap_ib_participation")}
