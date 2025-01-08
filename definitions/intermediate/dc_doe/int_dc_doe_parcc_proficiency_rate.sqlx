@@ -1,0 +1,19 @@
+config {
+    type: "table",
+    description: "Cleaned up data corresponding to DC enrollment"
+}
+
+select 
+  (case when left(_file,5) = 'state' then '2021-22'
+    else concat('20',left(right(_file,9),2),'-',right(left(right(_file,9),5),2)) end) as year,
+  concat(lea_code,lpad(cast(school_code as STRING),4,'0000')) as lea_school_id,
+  lea_name as district_name,
+  school_name,
+  tested_grade_subject as grade,
+  subgroup_value as student_group,
+  subject,
+  cast((case when total_count in ('NA','DS') or total_count like '%<%' or total_count like '%>%' or total_count like '%=%' then '0' else total_count end) as INT64) as count_tested,
+  cast((case when percent in ('NA','DS') or percent like '%<%' or percent like '%>%' or percent like '%=%' then '700.0' else percent end) as DECIMAL) as perc_proficient
+from ${ref('dc_doe_parcc_proficiency')}
+where assessment_name = 'PARCC'
+order by year, district_name, school_name

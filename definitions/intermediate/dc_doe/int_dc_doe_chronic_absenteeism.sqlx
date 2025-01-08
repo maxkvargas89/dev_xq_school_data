@@ -3,6 +3,21 @@ config {
     description: "Cleaned up data corresponding to DC chronic absenteeism"
 }
 
-select
-  *
+with cte as 
+(
+select  
+  concat('20',left(right(_file,9),2),'-',right(left(right(_file,9),5),2)) as year,
+  school as school_name, 
+  regexp_replace(coalesce(_chronically_truant,_truant_2023_24_compulsory_age_),'%','') as perc_chronically_absent
 from ${ref("dc_doe_chronic_absenteeism")}
+order by year, school_name
+)
+
+select year, school_name,
+  cast((case when 
+    (cte.perc_chronically_absent like '%<%' or
+    cte.perc_chronically_absent like '%>%' or
+    cte.perc_chronically_absent like '%=%' or
+    cte.perc_chronically_absent like '%N/A%') then '700.0' 
+  else cte.perc_chronically_absent end) as DECIMAL) as perc_chronically_absent
+from cte
