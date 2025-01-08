@@ -1,0 +1,33 @@
+config {
+    type: "table",
+    description: "Cleaned up data corresponding to DC enrollment"
+}
+
+with cte as 
+(
+  select 
+  school_year as year,
+  concat(lea_code,lpad(cast(school_code as STRING),4,'0000')) as lea_school_id,
+  lea_name as district_name,
+  school_name,
+  tested_grade_subject as grade,
+  subgroup_value as student_group,
+  subject,
+  regexp_replace(coalesce(_level_1,percent_level_1),'%','') as perc_level_1,
+  regexp_replace(coalesce(_level_2,percent_level_2),'%','') as perc_level_2,
+  regexp_replace(coalesce(_level_3,percent_level_3),'%','') as perc_level_3,
+  regexp_replace(coalesce(_level_4,percent_level_4),'%','') as perc_level_4,
+  regexp_replace(coalesce(_level_5,percent_level_5),'%','') as perc_level_5
+from ${ref("dc_doe_parcc_profiency_archived")}
+where assessment_type = 'PARCC'
+  and _file <> 'dc_doe_parcc_proficiency_21-22_archived.csv'
+)
+
+select year, lea_school_id, district_name, school_name, grade, student_group, subject,
+  cast((case when perc_level_1 in ('NA','DS') or perc_level_1 like '%<%' or perc_level_1 like '%>%' or perc_level_1 like '%=%' then '700.0' else perc_level_1 end) as DECIMAL) as perc_level_1,
+  cast((case when perc_level_2 in ('NA','DS') or perc_level_2 like '%<%' or perc_level_2 like '%>%' or perc_level_2 like '%=%' then '700.0' else perc_level_2 end) as DECIMAL) as perc_level_2,
+  cast((case when perc_level_3 in ('NA','DS') or perc_level_3 like '%<%' or perc_level_3 like '%>%' or perc_level_3 like '%=%' then '700.0' else perc_level_3 end) as DECIMAL) as perc_level_3,
+  cast((case when perc_level_4 in ('NA','DS') or perc_level_4 like '%<%' or perc_level_4 like '%>%' or perc_level_4 like '%=%' then '700.0' else perc_level_4 end) as DECIMAL) as perc_level_4,
+  cast((case when perc_level_5 in ('NA','DS') or perc_level_5 like '%<%' or perc_level_5 like '%>%' or perc_level_5 like '%=%' then '700.0' else perc_level_5 end) as DECIMAL) as perc_level_5
+from cte
+order by year, district_name, school_name

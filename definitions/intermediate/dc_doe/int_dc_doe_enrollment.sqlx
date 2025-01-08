@@ -3,6 +3,17 @@ config {
     description: "Cleaned up data corresponding to DC enrollment"
 }
 
-select
-  *
+select  
+  (case when length(school_year) = 4 then concat(cast(school_year as INT64) - 1,'-',right(school_year,2))
+  when left(school_year,2) = 'SY' then concat(right(left(school_year,6),4),'-',right(school_year,2))
+  else school_year end) as year,
+  concat(lea_code,lpad(cast(school_code as STRING),4,'0000')) as lea_school_id,
+  entity_type as governance,
+  lea_name as district_name, school_name, grade, student_group,
+  cast(enrollment_count as INT64) as count_enrollment,
+  cast((case when percent_enrolled = 'DS' 
+    or percent_enrolled like '%<%' 
+    or percent_enrolled like '%>%' 
+    or percent_enrolled like '%=%' then '700.0' else percent_enrolled end) as DECIMAL) as perc_enrollment
 from ${ref("dc_doe_enrollment")}
+order by year, district_name, school_name, grade, student_group
