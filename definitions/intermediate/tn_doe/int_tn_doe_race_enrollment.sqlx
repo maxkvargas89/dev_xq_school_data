@@ -1,0 +1,26 @@
+config {
+    type: "table",
+    description: "Transformation of TN DOE file to display enrollment breakdown by race",
+    tags: ["tn"]
+}
+
+with cte1 as
+
+(select *
+from ${ref("tn_doe_race_enrollment")}
+unpivot(perc_enrollment for subgroup in (african_american_pct,asian_pct, black_hispanic_native_american_pct, economically_disadvantaged_pct, female_pct, foster_pct, hawaiian_pacisld_pct, hispanic_pct, homeless_pct, limited_english_proficient_pct, male_pct, migrant_pct, military_pct, multirace_pct, native_american_pct, students_with_disabilities_pct, white_pct)))
+
+select 
+  school_year as year, 
+  concat(lpad(cast(district_id as STRING),3,'000'),lpad(cast(school_id as STRING),3,'0000')) as tn_id, 
+  district_name, 
+  school_name, 
+  initcap(regexp_replace(regexp_replace(subgroup,'_pct',''),'_',' ')) as subgroup,
+  cast((case when 
+    (perc_enrollment like '%Fewer%' or
+    perc_enrollment like '%Less%' or
+    perc_enrollment like '%*%' or
+    perc_enrollment like '%More%' or
+    perc_enrollment like '%Greater%') then '700' 
+    else perc_enrollment end) as DECIMAL) as perc_enrollment
+from cte1
