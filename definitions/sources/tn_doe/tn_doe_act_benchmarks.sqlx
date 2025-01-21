@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: "xq-data-bigquery",
+  schema: "staging_xq_school_data",
+  name: "tn_doe_act_benchmarks",
+  description: "Average scores and percent meeting benchmarks on ACT"
+}

@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: "xq-data-bigquery",
+  schema: "staging_xq_school_data",
+  name: "tn_doe_eoc_proficiency",
+  description: "Percentage of students in each performance level of end of year assessments"
+}
