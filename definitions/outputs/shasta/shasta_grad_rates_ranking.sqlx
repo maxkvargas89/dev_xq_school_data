@@ -1,0 +1,27 @@
+config {
+    type: "table",
+    schema: "dataform_outputs_xq_school_data",
+    description: "Overall graduation rates ranking among bay area charters",
+    tags: ["shasta"]
+}
+
+select 
+  year,
+  school_name, 
+  round(sum(count_graduates)/sum(count_graduates+count_dropouts+count_still_enrolled),2) as grad_rate
+from ${ref("int_ca_doe_graduation_rate")}
+where reporting_category = 'Total'
+  and year = '2023-24'
+  and cds_code in 
+      (SELECT distinct cds_code,
+      FROM ${ref("int_ca_doe_enrollment")}
+      where charter = 'Y' 
+      and county in ('Alameda','Contra Cost','San Mateo','Santa Clara', 'Marin')
+      UNION DISTINCT
+      SELECT distinct cds_code,
+      FROM ${ref("int_ca_doe_enrollment")}
+      where charter in ('N','Y')
+      and district like '%Jefferson Union High%')
+group by year, school_name
+having sum(count_graduates+count_dropouts+count_still_enrolled) <> 0
+order by grad_rate desc
