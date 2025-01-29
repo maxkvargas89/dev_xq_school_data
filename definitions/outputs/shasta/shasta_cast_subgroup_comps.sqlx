@@ -1,0 +1,63 @@
+config {
+    type: "table",
+    schema: "dataform_outputs_xq_school_data",
+    description: "Science proficiency rates by subgroup, in comparisoin to district and bay area charters",
+    tags: ["shasta"]
+}
+
+with cte_science_shasta as
+(select 
+  student_group_name,
+  avg(perc_met_standard + perc_exceeded_standard) as science_rate
+FROM ${ref("int_ca_doe_cast_proficiency")}
+where school_name like '%Summit Public School: Shasta%' 
+  and year = '2023-24'
+  and grade = 12
+  and perc_met_standard <> 700.0
+  and perc_exceeded_standard <> 700.0
+group by student_group_name
+order by science_rate desc),
+
+cte_science_district as 
+(select 
+  student_group_name, 
+  avg((perc_met_standard + perc_exceeded_standard)) as science_rate
+FROM ${ref("int_ca_doe_cast_proficiency")}
+where district_name = 'Jefferson Union High'
+  and year = '2023-24'
+  and grade = 12
+  and perc_met_standard <> 700.0
+  and perc_exceeded_standard <> 700.0
+group by student_group_name
+order by science_rate asc),
+
+cte_science_charter as
+(select 
+  student_group_name, 
+  avg((perc_met_standard + perc_exceeded_standard)) as science_rate
+FROM ${ref("int_ca_doe_cast_proficiency")}
+where year = '2023-24'
+  and grade = 12
+  and perc_met_standard <> 700.0
+  and perc_exceeded_standard <> 700.0
+  and cds_code in 
+      (SELECT distinct cds_code,
+      FROM ${ref("int_ca_doe_enrollment")}
+      where charter = 'Y' 
+      and county in ('Alameda','Contra Cost','San Mateo','Santa Clara', 'Marin')
+      UNION DISTINCT
+      SELECT distinct cds_code,
+      FROM ${ref("int_ca_doe_enrollment")} 
+      where charter in ('N','Y')
+      and district like '%Jefferson Union High%')
+group by student_group_name
+order by science_rate asc)
+
+select cte_science_shasta.student_group_name, 
+  round(cte_science_shasta.science_rate,1) as science_shasta, 
+  round(cte_science_district.science_rate,1) as science_district, 
+  round(cte_science_charter.science_rate,1) as science_charter
+from cte_science_shasta
+  left join cte_science_district on cte_science_shasta.student_group_name = cte_science_district.student_group_name
+  left join cte_science_charter on cte_science_shasta.student_group_name = cte_science_charter.student_group_name
+order by science_shasta desc

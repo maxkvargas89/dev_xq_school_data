@@ -1,0 +1,44 @@
+config {
+    type: "table",
+    schema: "dataform_outputs_xq_school_data",
+    description: "Overall graduation rates over time, in comparison to district and bay area charters",
+    tags: ["shasta"]
+}
+
+with cte1 as 
+(select 
+  year, 
+  round(sum(count_graduates)/sum(count_graduates+count_dropouts+count_still_enrolled),2) as dist_rate
+from ${ref("int_ca_doe_graduation_rate")}
+where district_name = 'Jefferson Union High' 
+  and reporting_category = 'Total'
+group by year
+order by year asc),
+
+cte2 as
+(select year, 
+  round(sum(count_graduates)/sum(count_graduates+count_dropouts+count_still_enrolled),2) as charter_rate
+from ${ref("int_ca_doe_graduation_rate")}
+where reporting_category = 'Total' 
+  and cds_code in 
+      (SELECT distinct cds_code,
+      FROM ${ref("int_ca_doe_school_list")}
+      where charter = 'Y' 
+      and county in ('Alameda','Contra Cost','San Mateo','Santa Clara','Marin'))
+group by year
+order by year asc),
+
+cte3 as
+(select year, school_name, round(sum(count_graduates)/(sum(count_graduates)+sum(count_dropouts)+sum(count_still_enrolled)),2) as shasta_rate
+from ${ref("int_ca_doe_graduation_rate")}
+where school_name like '%Summit Public School: Shasta%' 
+  and reporting_category = "Total"
+  and charter = "Yes"
+group by year, school_name
+order by year asc)
+
+select cte3.year, shasta_rate, dist_rate, charter_rate
+from cte3
+left join cte1 on cte3.year = cte1.year
+left join cte2 on cte3.year = cte2.year
+order by year asc

@@ -1,0 +1,21 @@
+config {
+    type: "table",
+    schema: "dataform_outputs_xq_school_data",
+    description: "AP course participation ranked among bay area charters",
+    tags: ["shasta"]
+}
+
+SELECT year, school_name, perc_students_in_ap, dense_rank() over(order by perc_students_in_ap desc) as ranking
+FROM ${ref("int_ca_doe_ap_participation")}
+where cds_code in 
+      (SELECT distinct cds_code,
+      FROM ${ref("int_ca_doe_enrollment")}
+      where charter = 'Y' 
+      and county in ('Alameda','Contra Cost','San Mateo','Santa Clara', 'Marin')
+      UNION DISTINCT
+      SELECT distinct cds_code,
+      FROM ${ref("int_ca_doe_enrollment")}
+      where charter in ('N','Y')
+      and district like '%Jefferson Union High%')
+and year = '2022-23'
+order by perc_students_in_ap desc

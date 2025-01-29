@@ -1,0 +1,62 @@
+config {
+    type: "table",
+    schema: "dataform_outputs_xq_school_data",
+    description: "Student demographics in comparisoin to district and bay area charters",
+    tags: ["shasta"]
+}
+
+with cte1 as 
+(SELECT reporting_category,
+  round(sum(count_enrollment)/
+      (select sum(count_enrollment)
+      FROM ${ref("int_ca_doe_enrollment")}
+      where school like '%Summit Public School: Shasta%'
+      and year = '2023-24'
+      and reporting_category = 'Total'),2)*100 as perc_enrollment
+ FROM ${ref("int_ca_doe_enrollment")}
+ where school like '%Summit Public School: Shasta%'
+  and year = '2023-24'
+  and reporting_category in ('Socioeconomically Disadvantaged','Hispanic or Latino','Asian','Filipino','White','African American','White','Reclassified Fluent English Proficient','Students with Disabilities')
+group by reporting_category
+order by perc_enrollment desc),
+
+cte2 as
+(SELECT reporting_category,
+  round(sum(count_enrollment)/
+      (select sum(count_enrollment)
+      FROM ${ref("int_ca_doe_enrollment")}
+      where county in ('Alameda','Contra Cost','San Mateo','Santa Clara','Marin')
+      and charter = "Y"
+      and year = '2023-24'
+      and reporting_category = 'Total'),2)*100 as perc_enrollment
+ FROM ${ref("int_ca_doe_enrollment")}
+ where county in ('Alameda','Contra Cost','San Mateo','Santa Clara','Marin')
+  and charter like "%Y%"
+  and year = '2023-24'
+  and reporting_category in ('Socioeconomically Disadvantaged','Hispanic or Latino','Asian','Filipino','White','African American','White','Reclassified Fluent English Proficient','Students with Disabilities')
+group by reporting_category
+order by perc_enrollment desc),
+
+cte3 as 
+(SELECT reporting_category,
+  round(sum(count_enrollment)/
+      (select sum(count_enrollment)
+      FROM ${ref("int_ca_doe_enrollment")}
+      where district = 'Jefferson Union High' 
+      and year = '2023-24'
+      and reporting_category = 'Total'),2)*100 as perc_enrollment
+ FROM ${ref("int_ca_doe_enrollment")}
+ where district = 'Jefferson Union High' 
+  and year = '2023-24'
+  and reporting_category in ('Socioeconomically Disadvantaged','Hispanic or Latino','Asian','Filipino','White','African American','White','Reclassified Fluent English Proficient','Students with Disabilities')
+group by reporting_category
+order by perc_enrollment desc)
+
+select cte1.reporting_category, 
+  cte1.perc_enrollment as shasta,
+  cte3.perc_enrollment as district,
+  cte2.perc_enrollment as bay_charters
+from cte1 
+  inner join cte2 on cte1.reporting_category = cte2.reporting_category
+  inner join cte3 on cte1.reporting_category = cte3.reporting_category
+order by shasta desc

@@ -1,0 +1,30 @@
+config {
+    type: "table",
+    schema: "dataform_outputs_xq_school_data",
+    description: "Overall stability rates over time, in comparison to district and bay area charters",
+    tags: ["shasta"]
+}
+
+select a.year, school_name, round(count_stable_students/count_enrollment,2) as shasta_rate, dist_rate, charter_rate
+from ${ref("int_ca_doe_stability_rate")} as a
+inner join 
+  (select year, round(sum(count_stable_students)/sum(count_enrollment),2) as dist_rate
+  from ${ref("int_ca_doe_stability_rate")}
+  where district_name = 'Jefferson Union High' and reporting_category = 'Total'
+  group by year
+  order by year asc) as join1
+  on a.year = join1.year
+inner join 
+  (select year, round(sum(count_stable_students)/sum(count_enrollment),2) as charter_rate
+  from ${ref("int_ca_doe_stability_rate")}
+  where reporting_category = 'Total' 
+  and cds_code in 
+      (SELECT distinct cds_code,
+      FROM ${ref("int_ca_doe_school_list")}
+      where charter = 'Y' 
+      and county in ('Alameda','Contra Cost','San Mateo','Santa Clara','Marin'))
+   group by year
+   order by year asc) as join2
+  on a.year = join2.year
+where school_name like '%Summit Public School: Shasta%' and reporting_category = "Total"
+order by year asc

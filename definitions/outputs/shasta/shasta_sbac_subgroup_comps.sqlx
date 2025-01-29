@@ -1,0 +1,123 @@
+config {
+    type: "table",
+    schema: "dataform_outputs_xq_school_data",
+    description: "ELA and math proficiency rates by subgroup, in comparisoin to district and bay area charters",
+    tags: ["shasta"]
+}
+
+with cte_math_shasta as
+(select 
+  student_group_name,
+  avg(perc_met_standard + perc_exceeded_standard) as math_rate
+FROM ${ref("int_ca_doe_sbac_proficiency")}
+where school_name like '%Summit Public School: Shasta%' 
+  and year = '2023-24'
+  and test_subject = 'Math'
+  and grade = 11
+  and perc_met_standard <> 700.0
+  and perc_exceeded_standard <> 700.0
+group by student_group_name
+order by math_rate desc),
+
+cte_ela_shasta as
+(select 
+  student_group_name,
+  avg(perc_met_standard + perc_exceeded_standard) as ela_rate
+FROM ${ref("int_ca_doe_sbac_proficiency")}
+where school_name like '%Summit Public School: Shasta%' 
+  and year = '2023-24'
+  and test_subject = 'ELA'
+  and grade = 11
+  and perc_met_standard <> 700.0
+  and perc_exceeded_standard <> 700.0
+group by student_group_name
+order by ela_rate desc),
+
+cte_math_district as 
+(select 
+  student_group_name, 
+  avg((perc_met_standard + perc_exceeded_standard)) as math_rate
+FROM ${ref("int_ca_doe_sbac_proficiency")}
+where district_name = 'Jefferson Union High'
+  and year = '2023-24'
+  and test_subject = 'Math'
+  and grade = 11
+  and perc_met_standard <> 700.0
+  and perc_exceeded_standard <> 700.0
+group by student_group_name
+order by math_rate asc),
+
+cte_ela_district as 
+(select 
+  student_group_name, 
+  avg((perc_met_standard + perc_exceeded_standard)) as ela_rate
+FROM ${ref("int_ca_doe_sbac_proficiency")}
+where district_name = 'Jefferson Union High'
+  and year = '2023-24'
+  and test_subject = 'ELA'
+  and grade = 11
+  and perc_met_standard <> 700.0
+  and perc_exceeded_standard <> 700.0
+group by student_group_name
+order by ela_rate asc),
+
+cte_math_charter as
+(select 
+  student_group_name, 
+  avg((perc_met_standard + perc_exceeded_standard)) as math_rate
+FROM ${ref("int_ca_doe_sbac_proficiency")}
+where test_subject = 'Math'
+  and year = '2023-24'
+  and grade = 11
+  and perc_met_standard <> 700.0
+  and perc_exceeded_standard <> 700.0
+  and cds_code in 
+      (SELECT distinct cds_code,
+      FROM ${ref("int_ca_doe_enrollment")}
+      where charter = 'Y' 
+      and county in ('Alameda','Contra Cost','San Mateo','Santa Clara', 'Marin')
+      UNION DISTINCT
+      SELECT distinct cds_code,
+      FROM ${ref("int_ca_doe_enrollment")} 
+      where charter in ('N','Y')
+      and district like '%Jefferson Union High%')
+group by student_group_name
+order by math_rate asc),
+
+cte_ela_charter as
+(select 
+  student_group_name, 
+  avg((perc_met_standard + perc_exceeded_standard)) as ela_rate
+FROM ${ref("int_ca_doe_sbac_proficiency")}
+where test_subject = 'ELA'
+  and year = '2023-24'
+  and grade = 11
+  and perc_met_standard <> 700.0
+  and perc_exceeded_standard <> 700.0
+  and cds_code in 
+      (SELECT distinct cds_code,
+      FROM ${ref("int_ca_doe_enrollment")} 
+      where charter = 'Y' 
+      and county in ('Alameda','Contra Cost','San Mateo','Santa Clara', 'Marin')
+      UNION DISTINCT
+      SELECT distinct cds_code,
+      FROM ${ref("int_ca_doe_enrollment")} 
+      where charter in ('N','Y')
+      and district like '%Jefferson Union High%')
+group by student_group_name
+order by ela_rate asc)
+
+select cte_math_shasta.student_group_name, 
+  round(cte_math_shasta.math_rate,1) as math_shasta, 
+  round(cte_math_district.math_rate,1) as math_district, 
+  round(cte_math_charter.math_rate,1) as math_charter, 
+  round(cte_ela_shasta.ela_rate,1) as ela_shasta,
+  round(cte_ela_district.ela_rate,1) as ela_district,
+  round(cte_ela_charter.ela_rate,1) as ela_charter
+from cte_ela_shasta
+  left join cte_math_shasta on cte_ela_shasta.student_group_name = cte_math_shasta.student_group_name
+  left join cte_ela_district on cte_ela_shasta.student_group_name = cte_ela_district.student_group_name
+  left join cte_math_district on cte_ela_shasta.student_group_name = cte_math_district.student_group_name
+  left join cte_ela_charter on cte_ela_shasta.student_group_name = cte_ela_charter.student_group_name
+  left join cte_math_charter on cte_ela_shasta.student_group_name = cte_math_charter.student_group_name
+order by ela_shasta desc

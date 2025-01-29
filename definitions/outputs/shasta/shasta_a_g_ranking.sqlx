@@ -1,0 +1,31 @@
+config {
+    type: "table",
+    schema: "dataform_outputs_xq_school_data",
+    description: "Ranking of A-G rates acros the bay area charter schools",
+    tags: ["shasta"]
+}
+
+with cte1 as 
+(select year, school_name, perc_a_g_grad
+from ${ref("int_ca_doe_a_thru_g")}
+where 
+  reporting_category = 'Total'
+  and dass like '%No%'
+  and 
+    cds_code in 
+      (SELECT distinct cds_code,
+      FROM ${ref("int_ca_doe_enrollment")}
+      where charter = 'Y' 
+      and county in ('Alameda','Contra Cost','San Mateo','Santa Clara', 'Marin')
+      UNION DISTINCT
+      SELECT distinct cds_code,
+      FROM ${ref("int_ca_doe_enrollment")}
+      where charter in ('N','Y')
+      and district like '%Jefferson Union High%')
+order by year asc, school_name)
+
+select year, school_name, perc_a_g_grad
+from cte1
+where year = '2023-24'
+  and perc_a_g_grad <> 700
+order by perc_a_g_grad desc
