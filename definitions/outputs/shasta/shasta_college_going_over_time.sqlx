@@ -1,0 +1,63 @@
+config {
+    type: "table",
+    schema: "dataform_outputs_xq_school_data",
+    description: "Overall college going rates over time, in comparison to district and bay area charters",
+    tags: ["shasta"]
+}
+
+with cte_school as
+(select 
+  year, 
+  round(sum(count_enroll_college_12mos)/sum(high_school_completers),2) as college_rate,
+  round(sum(count_enroll_uc_12mos)/sum(count_enroll_college_12mos),2) as uc_rate
+from ${ref("int_ca_doe_college_enrollment")}
+where school_name like '%Summit Public School: Shasta%' 
+  and reporting_category = 'Total'
+  and completer_type = 'All high school completers'
+group by year
+order by year asc),
+
+cte_district as
+(select 
+  year, 
+  round(sum(count_enroll_college_12mos)/sum(high_school_completers),2) as college_rate,
+  round(sum(count_enroll_uc_12mos)/sum(count_enroll_college_12mos),2) as uc_rate
+from ${ref("int_ca_doe_college_enrollment")}
+where district_name = 'Jefferson Union High' 
+  and reporting_category = 'Total'
+  and completer_type = 'All high school completers'
+group by year
+order by year asc),
+
+cte_charter as 
+(select 
+  year, 
+  round(sum(count_enroll_college_12mos)/sum(high_school_completers),2) as college_rate,
+  round(sum(count_enroll_uc_12mos)/sum(count_enroll_college_12mos),2) as uc_rate
+from ${ref("int_ca_doe_college_enrollment")}
+where reporting_category = 'Total'
+  and completer_type = 'All high school completers'
+  and cds_code in 
+      (SELECT distinct cds_code,
+      FROM ${ref("int_ca_doe_enrollment")}
+      where charter = 'Y' 
+      and county in ('Alameda','Contra Cost','San Mateo','Santa Clara', 'Marin')
+      UNION DISTINCT
+      SELECT distinct cds_code,
+      FROM ${ref("int_ca_doe_enrollment")}
+      where charter in ('N','Y')
+      and district like '%Jefferson Union High%')
+group by year
+order by year asc)
+
+select cte_school.year,
+  cte_school.college_rate as shasta_college_rate,
+  cte_district.college_rate as district_college_rate,
+  cte_charter.college_rate as charter_college_rate,
+   cte_school.uc_rate as shasta_uc_rate,
+  cte_district.uc_rate as district_uc_rate,
+  cte_charter.uc_rate as charter_uc_rate
+from cte_school
+  inner join cte_district on cte_school.year = cte_district.year
+  inner join cte_charter on cte_school.year = cte_charter.year
+order by cte_school.year asc
