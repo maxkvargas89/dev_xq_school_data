@@ -1,0 +1,60 @@
+config {
+    type: "table",
+    schema: "dataform_outputs_xq_school_data",
+    description: "Comparing college going rates across student subgroups, in comparison to district and bay area charters",
+    tags: ["shasta"]
+}
+
+with cte_shasta as
+(select 
+  reporting_category,
+   round(sum(count_enroll_college_12mos)/sum(high_school_completers),2) as college_rate
+FROM ${ref("int_ca_doe_college_enrollment")}
+where school_name like '%Summit Public School: Shasta%' 
+  and year = '2021-22'
+  and completer_type = 'All high school completers'
+group by reporting_category
+having sum(high_school_completers) > 0
+order by college_rate desc),
+
+cte_district as 
+(select 
+  reporting_category, 
+  round(sum(count_enroll_college_12mos)/sum(high_school_completers),2) as college_rate
+FROM ${ref("int_ca_doe_college_enrollment")}
+where district_name = 'Jefferson Union High'
+  and year = '2021-22'
+  and completer_type = 'All high school completers'
+group by reporting_category
+having sum(high_school_completers) > 0
+order by college_rate asc),
+
+cte_charter as
+(select 
+  reporting_category, 
+  round(sum(count_enroll_college_12mos)/sum(high_school_completers),2) as college_rate
+FROM ${ref("int_ca_doe_college_enrollment")}
+where year = '2021-22'
+  and completer_type = 'All high school completers'
+  and cds_code in 
+      (SELECT distinct cds_code,
+      FROM ${ref("int_ca_doe_enrollment")}
+      where charter = 'Y' 
+      and county in ('Alameda','Contra Cost','San Mateo','Santa Clara', 'Marin')
+      UNION DISTINCT
+      SELECT distinct cds_code,
+      FROM ${ref("int_ca_doe_enrollment")}
+      where charter in ('N','Y')
+      and district like '%Jefferson Union High%')
+group by reporting_category
+having sum(high_school_completers) > 0
+order by college_rate asc)
+
+select cte_shasta.reporting_category, 
+  round(cte_shasta.college_rate,2) as college_shasta, 
+  round(cte_district.college_rate,2) as college_district, 
+  round(cte_charter.college_rate,2) as college_charter
+from cte_shasta
+  left join cte_district on cte_shasta.reporting_category = cte_district.reporting_category
+  left join cte_charter on cte_shasta.reporting_category = cte_charter.reporting_category
+order by college_shasta desc
