@@ -25,12 +25,12 @@ cte2 as
   round(sum(count_enrollment)/
       (select sum(count_enrollment)
       FROM ${ref("int_ca_doe_enrollment")}
-      where county in ('Alameda','Contra Cost','San Mateo','Santa Clara','Marin')
+      where county in ('Alameda','Contra Cost','San Mateo','Santa Clara','Marin','San Francisco')
       and charter = "Y"
       and year = '2023-24'
       and reporting_category = 'Total'),2)*100 as perc_enrollment
  FROM ${ref("int_ca_doe_enrollment")}
- where county in ('Alameda','Contra Cost','San Mateo','Santa Clara','Marin')
+ where county in ('Alameda','Contra Cost','San Mateo','Santa Clara','Marin','San Francisco')
   and charter like "%Y%"
   and year = '2023-24'
   and reporting_category in ('Socioeconomically Disadvantaged','Hispanic or Latino','Asian','Filipino','White','African American','White','Reclassified Fluent English Proficient','Students with Disabilities')

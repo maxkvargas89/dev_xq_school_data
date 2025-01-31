@@ -24,7 +24,7 @@ where reporting_category = 'Total'
       (SELECT distinct cds_code,
       FROM ${ref("int_ca_doe_school_list")}
       where charter = 'Y' 
-      and county in ('Alameda','Contra Cost','San Mateo','Santa Clara','Marin'))
+      and county in ('Alameda','Contra Cost','San Mateo','Santa Clara','Marin','San Francisco'))
 group by year
 order by year asc),
 

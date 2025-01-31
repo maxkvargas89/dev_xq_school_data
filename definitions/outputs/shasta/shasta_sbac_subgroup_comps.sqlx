@@ -75,7 +75,7 @@ where test_subject = 'Math'
       (SELECT distinct cds_code,
       FROM ${ref("int_ca_doe_enrollment")}
       where charter = 'Y' 
-      and county in ('Alameda','Contra Cost','San Mateo','Santa Clara', 'Marin')
+      and county in ('Alameda','Contra Cost','San Mateo','Santa Clara', 'Marin','San Francisco')
       UNION DISTINCT
       SELECT distinct cds_code,
       FROM ${ref("int_ca_doe_enrollment")} 
@@ -98,7 +98,7 @@ where test_subject = 'ELA'
       (SELECT distinct cds_code,
       FROM ${ref("int_ca_doe_enrollment")} 
       where charter = 'Y' 
-      and county in ('Alameda','Contra Cost','San Mateo','Santa Clara', 'Marin')
+      and county in ('Alameda','Contra Cost','San Mateo','Santa Clara', 'Marin','San Francisco')
       UNION DISTINCT
       SELECT distinct cds_code,
       FROM ${ref("int_ca_doe_enrollment")} 
