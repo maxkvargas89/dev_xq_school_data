@@ -45,11 +45,7 @@ where year = '2023-24'
       FROM ${ref("int_ca_doe_enrollment")}
       where charter = 'Y' 
       and county in ('Alameda','Contra Cost','San Mateo','Santa Clara', 'Marin','San Francisco')
-      UNION DISTINCT
-      SELECT distinct cds_code,
-      FROM ${ref("int_ca_doe_enrollment")} 
-      where charter in ('N','Y')
-      and district like '%Jefferson Union High%')
+      )
 group by student_group_name
 order by science_rate asc)
 
