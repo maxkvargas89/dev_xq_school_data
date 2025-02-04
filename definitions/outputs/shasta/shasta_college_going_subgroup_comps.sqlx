@@ -41,11 +41,7 @@ where year = '2021-22'
       FROM ${ref("int_ca_doe_enrollment")}
       where charter = 'Y' 
       and county in ('Alameda','Contra Cost','San Mateo','Santa Clara', 'Marin','San Francisco')
-      UNION DISTINCT
-      SELECT distinct cds_code,
-      FROM ${ref("int_ca_doe_enrollment")}
-      where charter in ('N','Y')
-      and district like '%Jefferson Union High%')
+      )
 group by reporting_category
 having sum(high_school_completers) > 0
 order by college_rate asc)
