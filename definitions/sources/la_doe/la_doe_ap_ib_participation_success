@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: "xq-data-bigquery",
+  schema: "staging_xq_school_data",
+  name: "la_doe_ap_ib_participation_success",
+  description: "LA AP taking and passing by school, disaggregated"
+}
