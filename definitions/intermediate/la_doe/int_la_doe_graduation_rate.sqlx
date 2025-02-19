@@ -1,0 +1,29 @@
+config {
+    type: "table",
+    description: "Transformation of LA DOE file to dispaly graduation rates by school",
+    tags: ["la"]
+}
+
+with cte as 
+(select _file,
+  school_school_system_code as ds_code,
+  school_school_system_name as school_name,
+  american_indian_alaskan_native_rate, asian_rate, black_african_american_rate, economically_disadvantaged_rate, english_learner_rate, foster_care_rate, hispanic_rate, homeless_rate, military_affiliation_rate, multi_race_rate, native_hawaiian_pacific_islander_rate, students_with_disabilities_rate, white_rate, overall_cohort_grad_rate
+from ${ref("la_doe_graduation_rate")}
+where length(school_school_system_code) > 3),
+
+cte2 as
+(select *
+from cte
+unpivot(perc_graduate for subgroup in (american_indian_alaskan_native_rate, asian_rate, black_african_american_rate, economically_disadvantaged_rate, english_learner_rate, foster_care_rate, hispanic_rate, homeless_rate, military_affiliation_rate, multi_race_rate, native_hawaiian_pacific_islander_rate, overall_cohort_grad_rate, students_with_disabilities_rate, white_rate)))
+
+select 
+  case when _file like '%new%' then
+    concat('20',left(right(_file,9),2),'-',right(left(right(_file,9),5),2)) else
+    concat('20',left(right(_file,12),2),'-',right(left(right(_file,12),5),2)) end
+  as year,
+  ds_code,
+  school_name,
+  initcap(regexp_replace(regexp_replace(subgroup,"_"," "),'rate','')) as subgroup,
+cast((case when perc_graduate in ('NR','<5','>95','~') then '700.0' else perc_graduate end) as DECIMAL) as perc_graduate
+from cte2
