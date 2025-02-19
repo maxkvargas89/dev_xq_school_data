@@ -1,0 +1,37 @@
+config {
+    type: "table",
+    description: "Transformation of LA DOE file to dispaly achivement level distributions by school",
+    tags: ["la"]
+}
+
+with cte as 
+(SELECT
+  year,
+  school_code as ds_code,
+  school_system_name as district_name,
+  school_name,
+  subgroup,
+  algebra_i_advanced, algebra_i_approaching_basic, algebra_i_basic, algebra_i_mastery, algebra_i_unsatisfactory, biology_advanced, biology_approaching_basic, biology_basic, biology_mastery, biology_unsatisfactory, english_i_advanced, english_i_approaching_basic, english_i_basic, english_i_mastery, english_i_unsatisfactory, english_ii_advanced, english_ii_approaching_basic, english_ii_basic, english_ii_mastery, english_ii_unsatisfactory, geometry_advanced, geometry_approaching_basic, geometry_basic, geometry_mastery, geometry_unsatisfactory, u_s_history_advanced, u_s_history_approaching_basic, u_s_history_basic, u_s_history_mastery, u_s_history_unsatisfactory
+FROM ${ref("la_doe_leap_proficiency")}
+where summary_level = 'School'),
+
+cte2 as
+(select *
+from cte
+unpivot(perc_achievement_level for subject_level in (algebra_i_advanced, algebra_i_approaching_basic, algebra_i_basic, algebra_i_mastery, algebra_i_unsatisfactory, biology_advanced, biology_approaching_basic, biology_basic, biology_mastery, biology_unsatisfactory, english_i_advanced, english_i_approaching_basic, english_i_basic, english_i_mastery, english_i_unsatisfactory, english_ii_advanced, english_ii_approaching_basic, english_ii_basic, english_ii_mastery, english_ii_unsatisfactory, geometry_advanced, geometry_approaching_basic, geometry_basic, geometry_mastery, geometry_unsatisfactory, u_s_history_advanced, u_s_history_approaching_basic, u_s_history_basic, u_s_history_mastery, u_s_history_unsatisfactory)))
+
+select concat(year-1,'-',right(cast(year as string),2)) as year, 
+ds_code, district_name, school_name, subgroup,
+  (case when subject_level like 'algebra_i%' then 'Algebra I'
+    when subject_level like 'biology%' then 'Biology'
+    when subject_level like 'english_i_%' then 'English I'
+    when subject_level like 'english_ii%' then 'English II'
+    when subject_level like 'geometry%' then 'Geometry'
+    when subject_level like 'u_s_history%' then 'US History' end) as subject,
+  (case when subject_level like '%advanced' then 'Advanced'
+    when subject_level like '%approaching_basic' then 'Approaching Basic'
+    when subject_level like '%mastery' then 'Mastery'
+    when subject_level like '%unsatisfactory' then 'Unsatisfactory'
+    when subject_level like '%basic' and subject_level not like '%approaching%' then 'Basic' end) as achievement_level,
+  cast((case when perc_achievement_level in ('�1','NR','> 95','<5','< 5') then '700.0' else perc_achievement_level end) as DECIMAL) as perc_achievement_level
+from cte2

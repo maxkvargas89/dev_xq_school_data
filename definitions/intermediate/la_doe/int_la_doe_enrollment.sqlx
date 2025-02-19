@@ -1,0 +1,29 @@
+config {
+    type: "table",
+    description: "Transformation of LA DOE file to dispaly enrollment counts by school",
+    tags: ["la"]
+}
+
+with cte as
+(select _file, site_cd, school_system_name, site_name, charter_type, nonprofit, roll_up_type,
+am_ind, asian, black, grade_1, grade_10, grade_11, grade_12, grade_2, grade_3, grade_4, grade_5, grade_6, grade_7, grade_8, grade_9, grade_t_9, haw_pi, hispanic, infants_sp_ed, kindergarten, minority, multiple, pre_k, pre_school_sp_ed, total_students, white
+from ${ref("la_doe_enrollment")}
+where length(site_cd) > 3),
+
+cte2 as
+(select *
+from cte
+unpivot(count_enrollment for subgroup_grade in (am_ind, asian, black, grade_1, grade_10, grade_11, grade_12, grade_2, grade_3, grade_4, grade_5, grade_6, grade_7, grade_8, grade_9, grade_t_9, haw_pi, hispanic, infants_sp_ed, kindergarten, minority, multiple, pre_k, pre_school_sp_ed, total_students, white)))
+
+select case when _file like '%new%' then
+concat('20',left(right(_file,9),2),'-',right(left(right(_file,9),5),2)) else
+    concat('20',left(right(_file,12),2),'-',right(left(right(_file,12),5),2)) end as year, 
+site_cd as ds_code, 
+school_system_name as district_name,
+site_name as school_name, 
+charter_type, 
+nonprofit, 
+roll_up_type,
+initcap(regexp_replace(subgroup_grade,"_"," ")) as subgroup_grade,
+cast(regexp_replace(count_enrollment,",","") as INT64) as count_enrollment
+from cte2
