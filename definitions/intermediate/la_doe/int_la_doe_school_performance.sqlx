@@ -1,0 +1,30 @@
+config {
+    type: "table",
+    description: "Transformation of LA DOE file to dispaly school index scores",
+    tags: ["la"]
+}
+
+with cte as
+(select concat('20',left(right(_file,9),2),'-',right(left(right(_file,9),5),2)) as year, 
+  site_code as ds_code, 
+  school_system as district_name,
+  school as school_name,
+  subgroup_name,
+regexp_replace(regexp_replace(regexp_replace(act_index,'>145','145.0001'),'<5','4.9999'),'~','') as index_act,
+regexp_replace(regexp_replace(regexp_replace(cohort_graduation_rate_index_points_earned_for_cohort_graduation_rate_,'>145','145.0001'),'<5','4.9999'),'~','') as index_cohort_grad_rate,
+regexp_replace(regexp_replace(regexp_replace(dropout_credit_accumulation_index,'>145','145.0001'),'<5','4.9999'),'~','') as index_dropout_credits_accumulation,
+regexp_replace(regexp_replace(regexp_replace(high_school_assessment_index_includes_elpt_progress_points_,'>145','145.0001'),'<5','4.9999'),'~','') as index_assessment_elpt_progress,
+regexp_replace(regexp_replace(regexp_replace(high_school_interests_opportunities_index,'>145','145.0001'),'<5','4.9999'),'~','') as index_interests_opportunities,
+regexp_replace(regexp_replace(regexp_replace(high_school_progress_index,'>145','145.0001'),'<5','4.9999'),'~','') as index_progress,
+subgroup_letter_grade as letter_grade
+from ${ref("la_doe_school_performance")}
+where school_type_elementary_middle_high_combination_ = "High School")
+
+select year, ds_code, district_name, school_name, subgroup_name, subgroup_name, 
+  cast(index_act as DECIMAL) as index_act,
+  cast(index_cohort_grad_rate as DECIMAL) as index_cohort_grad_rate,
+  cast(index_dropout_credits_accumulation as DECIMAL) as index_dropout_credits_accumulation,
+  cast(index_assessment_elpt_progress as DECIMAL) as index_assessment_elpt_progress,
+  cast(index_interests_opportunities as DECIMAL) as index_interests_opportunities,
+  letter_grade
+from cte
