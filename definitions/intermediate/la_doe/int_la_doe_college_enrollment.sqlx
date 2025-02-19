@@ -1,0 +1,44 @@
+config {
+    type: "table",
+    description: "Transformation of LA DOE file to dispaly college enrollment by school",
+    tags: ["la"]
+}
+
+with cte as
+(SELECT coalesce(high_school_graduation_year,year) as year,
+  code as ds_code,
+  coalesce(school_system_site_name,name) as school_name,
+  economically_disadvantaged_enrolled_, 
+  english_learners_enrolled_, 
+  female_enrolled_, 
+  male_enrolled_, 
+  race_ethnicity_american_indian_enrolled_, 
+  race_ethnicity_asian_enrolled_, 
+  race_ethnicity_black_enrolled_, 
+  race_ethnicity_hispanic_enrolled_, 
+  race_ethnicity_multi_race_enrolled_, 
+  race_ethnicity_native_hawaiian_pacific_islander_enrolled_, 
+  race_ethnicity_students_of_color_enrolled_, 
+  race_ethnicity_white_enrolled_, 
+  students_with_disabilities_enrolled_, 
+  total_students_enrolled_
+FROM ${ref("la_doe_college_enrollment")}
+where length(code) > 3),
+
+cte2 as 
+(select *
+from cte
+unpivot(perc_enrolled for subgroup in (economically_disadvantaged_enrolled_, english_learners_enrolled_, female_enrolled_, male_enrolled_, race_ethnicity_american_indian_enrolled_, race_ethnicity_asian_enrolled_, race_ethnicity_black_enrolled_, race_ethnicity_hispanic_enrolled_, race_ethnicity_multi_race_enrolled_, race_ethnicity_native_hawaiian_pacific_islander_enrolled_, race_ethnicity_students_of_color_enrolled_, race_ethnicity_white_enrolled_, students_with_disabilities_enrolled_, total_students_enrolled_))),
+
+cte3 as
+(select 
+  year,
+  ds_code,
+  school_name,
+  regexp_replace(initcap(trim(regexp_replace(subgroup,"_",' '))),"Enrolled","") as subgroup,
+  regexp_replace(regexp_replace(perc_enrolled,'³',''),'²','') as perc_enrolled
+from cte2)
+
+select year, ds_code, school_name, subgroup,
+cast((case when perc_enrolled in ('n/a','<10','~') then '700.0' else perc_enrolled end) as DECIMAL) as perc_enroll_college
+from cte3
