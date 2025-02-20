@@ -25,5 +25,5 @@ charter_type,
 nonprofit, 
 roll_up_type,
 initcap(regexp_replace(subgroup_grade,"_"," ")) as subgroup_grade,
-cast(regexp_replace(count_enrollment,",","") as INT64) as count_enrollment
+cast(regexp_replace((case when count_enrollment = 'NA' then '0' else count_enrollment end),",","") as INT64) as count_enrollment
 from cte2
