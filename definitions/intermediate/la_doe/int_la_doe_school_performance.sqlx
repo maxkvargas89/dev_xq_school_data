@@ -20,7 +20,7 @@ subgroup_letter_grade as letter_grade
 from ${ref("la_doe_school_performance")}
 where school_type_elementary_middle_high_combination_ = "High School")
 
-select year, ds_code, district_name, school_name, subgroup_name, subgroup_name, 
+select year, ds_code, district_name, school_name, subgroup_name,
   cast(index_act as DECIMAL) as index_act,
   cast(index_cohort_grad_rate as DECIMAL) as index_cohort_grad_rate,
   cast(index_dropout_credits_accumulation as DECIMAL) as index_dropout_credits_accumulation,
