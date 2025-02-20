@@ -3,27 +3,9 @@ config {
     description: "Transformation of LA DOE file to dispaly average ACT composite scores by school",
     tags: ["la"]
 }
-
-with cte as 
-(select concat(district_id,site_code) as ds_code, 
-district as district_name, 
+select concat('20',left(left(right(_file,9),5),2),'-',right(left(right(_file,9),5),2)) as year,
+lpad(site_code,6,'000000') as ds_code, 
+coalesce(district,school_system_name) as district_name, 
 site_name as school_name,
-    _2015_2016_average_composite_score,
-    _2016_2017_average_composite_score,
-    _2017_2018_average_composite_score,
-    _2018_2019_average_composite_score,
-    _2019_2020_average_composite_score,
-    _2020_2021_average_composite_score,
-    _2021_2022_average_composite_score
-from ${ref("la_doe_act_scores")}),
-
-cte2 as
-(select *
-from cte 
-unpivot(composite_score for year in ( _2015_2016_average_composite_score,_2016_2017_average_composite_score,_2017_2018_average_composite_score,_2018_2019_average_composite_score,_2019_2020_average_composite_score,_2020_2021_average_composite_score,_2021_2022_average_composite_score)))
-
-select 
-    concat(left(right(left(year,10),9),4),"-",right(left(year,10),2)) as year,
-ds_code, district_name, school_name, 
-cast((case when composite_score like '%~%' then '700.0' else composite_score end) as DECIMAL) as avg_score
-from cte2
+cast((case when average_composite_score like '%~%' then '700.0' else average_composite_score end) as DECIMAL) as avg_score
+from ${ref("la_doe_act_scores")}

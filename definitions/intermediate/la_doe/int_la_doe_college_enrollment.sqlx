@@ -6,7 +6,7 @@ config {
 
 with cte as
 (SELECT coalesce(high_school_graduation_year,year) as year,
-  code as ds_code,
+  lpad(coalesce(code,school_system_site_code),6,'000000') as ds_code,
   coalesce(school_system_site_name,name) as school_name,
   economically_disadvantaged_enrolled_, 
   english_learners_enrolled_, 
@@ -21,14 +21,14 @@ with cte as
   race_ethnicity_students_of_color_enrolled_, 
   race_ethnicity_white_enrolled_, 
   students_with_disabilities_enrolled_, 
-  total_students_enrolled_
+  _graduates_enrolled_in_college_1_st_fall_after_hs_graduation
 FROM ${ref("la_doe_college_enrollment")}
-where length(code) > 3),
+where lpad(coalesce(code,school_system_site_code),6,'000000') not like '000%'),
 
 cte2 as 
 (select *
 from cte
-unpivot(perc_enrolled for subgroup in (economically_disadvantaged_enrolled_, english_learners_enrolled_, female_enrolled_, male_enrolled_, race_ethnicity_american_indian_enrolled_, race_ethnicity_asian_enrolled_, race_ethnicity_black_enrolled_, race_ethnicity_hispanic_enrolled_, race_ethnicity_multi_race_enrolled_, race_ethnicity_native_hawaiian_pacific_islander_enrolled_, race_ethnicity_students_of_color_enrolled_, race_ethnicity_white_enrolled_, students_with_disabilities_enrolled_, total_students_enrolled_))),
+unpivot(perc_enrolled for subgroup in (economically_disadvantaged_enrolled_, english_learners_enrolled_, female_enrolled_, male_enrolled_, race_ethnicity_american_indian_enrolled_, race_ethnicity_asian_enrolled_, race_ethnicity_black_enrolled_, race_ethnicity_hispanic_enrolled_, race_ethnicity_multi_race_enrolled_, race_ethnicity_native_hawaiian_pacific_islander_enrolled_, race_ethnicity_students_of_color_enrolled_, race_ethnicity_white_enrolled_, students_with_disabilities_enrolled_, _graduates_enrolled_in_college_1_st_fall_after_hs_graduation))),
 
 cte3 as
 (select 
@@ -40,5 +40,5 @@ cte3 as
 from cte2)
 
 select year, ds_code, school_name, subgroup,
-cast((case when perc_enrolled in ('n/a','<10','~') then '700.0' else perc_enrolled end) as DECIMAL) as perc_enroll_college
+cast((case when perc_enrolled in ('n/a','<10','~','<=1','>=99') then '700.0' else perc_enrolled end) as DECIMAL) as perc_enroll_college
 from cte3
