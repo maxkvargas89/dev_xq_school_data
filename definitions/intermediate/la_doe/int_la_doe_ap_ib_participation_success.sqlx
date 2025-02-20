@@ -20,8 +20,8 @@ case when _file like '%new%' then
     concat('20',left(right(_file,9),2),'-',right(left(right(_file,9),5),2)) else
     concat('20',left(right(_file,12),2),'-',right(left(right(_file,12),5),2)) end as year, 
 school_code, school_name, cte.group, subgroup,
-  cast((case when count_ap_participation in ('<10','~','NA','PY_Tests','PY_Passed','CY_Tests','CY_Passed') then '0' else count_ap_participation end) as INT64) as count_ap_participation,
-  cast((case when count_ap_passing in ('<10','~','NA','PY_Tests','PY_Passed','CY_Tests','CY_Passed') then '0' else count_ap_passing end) as INT64) as count_ap_passing
+  cast((case when count_ap_participation in ('<10','~','NA','PY_Tests','PY_Passed','CY_Tests','CY_Passed','>=30','>=20','>=10','>=70') or count_ap_participation like '%>=%' then '0' else count_ap_participation end) as INT64) as count_ap_participation,
+  cast((case when count_ap_passing in ('<10','~','NA','PY_Tests','PY_Passed','CY_Tests','CY_Passed','>=30','>=20','>=10','>=70') or count_ap_passing like '%>=%' then '0' else count_ap_passing end) as INT64) as count_ap_passing
 from cte
 where subgroup is not null
   and school_system_code not in ('LA','LEA')
