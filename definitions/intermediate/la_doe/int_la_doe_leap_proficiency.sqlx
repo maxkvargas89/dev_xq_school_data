@@ -22,12 +22,12 @@ unpivot(perc_achievement_level for subject_level in (algebra_i_advanced, algebra
 
 select concat(year-1,'-',right(cast(year as string),2)) as year, 
 ds_code, district_name, school_name, subgroup,
-  (case when subject_level like 'algebra_i%' then 'Algebra I'
-    when subject_level like 'biology%' then 'Biology'
-    when subject_level like 'english_i_%' then 'English I'
-    when subject_level like 'english_ii%' then 'English II'
-    when subject_level like 'geometry%' then 'Geometry'
-    when subject_level like 'u_s_history%' then 'US History' end) as subject,
+  (case when left(subject_level,9) = 'algebra_i' then 'Algebra I'
+    when left(subject_level,7) = 'biology' then 'Biology'
+    when left(subject_level,10) = 'english_i_' then 'English I'
+    when left(subject_level,10) = 'english_ii' then 'English II'
+    when left(subject_level,8) = 'geometry' then 'Geometry'
+    when left(subject_level,11) = 'u_s_history' then 'US History' end) as subject,
   (case when subject_level like '%advanced' then 'Advanced'
     when subject_level like '%approaching_basic' then 'Approaching Basic'
     when subject_level like '%mastery' then 'Mastery'
