@@ -1,0 +1,12 @@
+config {
+  type: "declaration",
+  database: "xq-data-bigquery",
+  schema: "staging_xq_school_data",
+  name: "circulos_comps"
+}
+
+SELECT 
+    DISTINCT regexp_replace(cdscode,"'",'') as cdscode
+FROM ${ref("ca_doe_school_list")}
+WHERE (soctype in ('High Schools (Public)','High Schools In 1 School Dist. (Public)') and district = 'Santa Ana Unified')
+    or (soctype = 'K-12 Schools (Public)' and school = "Advanced Learning Academy")
