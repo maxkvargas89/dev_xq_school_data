@@ -8,10 +8,11 @@ config {
 select school_name, 
   reporting_category, 
   perc_chronic_absenteeism,
+  avg(perc_chronic_absenteeism) over(partition by reporting_category) as comp_avg,
   rank() over(partition by reporting_category order by perc_chronic_absenteeism) as ranking
-from ${ref("int_ca_doe_chronic_absenteeism")}
+from ${ref("int_ca_doe_chronic_absenteeism")} as metric
+    inner join ${ref("circulos_comps")} as comps on metric.cds_code = comps.cdscode
 where year = '2023-24'
   and dass like "%No%"
   and perc_chronic_absenteeism <> 700
-  and cds_code in ${ref("circulos_comps")}
 order by reporting_category, perc_chronic_absenteeism asc
