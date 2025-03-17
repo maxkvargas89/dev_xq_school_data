@@ -1,5 +1,5 @@
 config {
-  type: "declaration",
+  type: "table",
   database: "xq-data-bigquery",
   schema: "staging_xq_school_data",
   name: "circulos_comps"
