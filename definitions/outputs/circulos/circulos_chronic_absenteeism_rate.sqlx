@@ -13,5 +13,5 @@ from ${ref("int_ca_doe_chronic_absenteeism")}
 where year = '2023-24'
   and dass like "%No%"
   and perc_chronic_absenteeism <> 700
-  and cds_code in UNNEST(${ref("circulos_comps")})
+  and cds_code in ${ref("circulos_comps")}
 order by reporting_category, perc_chronic_absenteeism asc
