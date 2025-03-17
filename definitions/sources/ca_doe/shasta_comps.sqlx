@@ -6,23 +6,22 @@ config {
 }
 
 WITH CTE AS
-(SELECT distinct lpad(regexp_replace(cdscode,"'",''),14,'000000000000000') as cdscode
-FROM ${ref("ca_doe_school_list")}
-WHERE charter = 'Y'
-      and county in ('Alameda','Contra Cost','San Mateo','Santa Clara', 'Marin','San Francisco')
-      and soctype in ('High Schools (Public)','High Schools In 1 School Dist. (Public)')
-      and status_type <> 'Closed'
+(SELECT distinct lpad(cast(CDScode as STRING),14,'000000000000000') as cdscode
+FROM ${ref("ca_doe_school_directory")}
+WHERE Charter = 'Y'
+      and County in ('Alameda','Contra Cost','San Mateo','Santa Clara', 'Marin','San Francisco')
+      and SOCType in ('High Schools (Public)','High Schools In 1 School Dist. (Public)')
+      and StatusType <> 'Closed'
 UNION DISTINCT
-SELECT distinct lpad(regexp_replace(cdscode,"'",''),14,'000000000000000') as cdscode
-FROM ${ref("ca_doe_school_list")}
-WHERE charter = 'N'
-      and district like '%Jefferson Union High%' 
-      and soctype in ('High Schools (Public)','High Schools In 1 School Dist. (Public)')
-      and status_type <> 'Closed')
+SELECT distinct lpad(cast(CDScode as STRING),14,'000000000000000') as cdscode
+FROM ${ref("ca_doe_school_directory")}
+WHERE Charter = 'N'
+      and District like '%Jefferson Union High%' 
+      and SOCType in ('High Schools (Public)','High Schools In 1 School Dist. (Public)')
+      and StatusType <> 'Closed')
 
 SELECT *
 FROM CTE
 WHERE cdscode not in 
     (SELECT distinct lpad(cast(CDS as STRING),14,'000000000000000') as cdscode 
-    FROM ${ref("ca_doe_dass_schools_23-24")}
-    WHERE DASSStatusType = '2024 DASS Application')
+    FROM ${ref("ca_doe_dass_schools_23-24")})

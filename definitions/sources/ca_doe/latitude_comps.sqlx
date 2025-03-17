@@ -7,14 +7,13 @@ config {
 
 WITH CTE AS
 (SELECT 
-    DISTINCT lpad(regexp_replace(cdscode,"'",''),14,'000000000000000') as cdscode
-FROM ${ref("ca_doe_school_list")}
-WHERE (soctype in ('High Schools (Public)','High Schools In 1 School Dist. (Public)') and district in ('Oakland Unified','SBE - Latitude 37.8 High'))
-  and status_type <> 'Closed')
+    DISTINCT lpad(cast(CDSCode as STRING),14,'000000000000000') as cdscode
+FROM ${ref("ca_doe_school_directory")}
+WHERE (SOCType in ('High Schools (Public)','High Schools In 1 School Dist. (Public)') and district in ('Oakland Unified','SBE - Latitude 37.8 High'))
+  and StatusType <> 'Closed')
 
 SELECT *
 FROM CTE
 WHERE cdscode not in 
     (SELECT distinct lpad(cast(CDS as STRING),14,'000000000000000') as cdscode 
-    FROM ${ref("ca_doe_dass_schools_23-24")}
-    WHERE DASSStatusType = '2024 DASS Application')
+    FROM ${ref("ca_doe_dass_schools_23-24")})

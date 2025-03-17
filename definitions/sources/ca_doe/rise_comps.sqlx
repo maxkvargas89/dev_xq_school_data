@@ -2,19 +2,18 @@ config {
   type: "table",
   database: "xq-data-bigquery",
   schema: "dataform_intermediate_xq_school_data",
-  name: "circulos_comps"
+  name: "rise_comps"
 }
 
 WITH CTE AS
 (SELECT 
-    DISTINCT lpad(cast(CDSCode as STRING),14,'000000000000000') as cdscode
+    DISTINCT lpad(cast(CDSCode as STRING),14,'000000000000000') as cdscode, school
 FROM ${ref("ca_doe_school_directory")}
-WHERE (SOCType in ('High Schools (Public)','High Schools In 1 School Dist. (Public)') and district = 'Santa Ana Unified')
-    or (SOCType = 'K-12 Schools (Public)' and School = "Advanced Learning Academy")
+WHERE (SOCType in ('High Schools (Public)','High Schools In 1 School Dist. (Public)') and County = 'Los Angeles')
      and StatusType <> 'Closed')
 
 SELECT *
 FROM CTE
-WHERE cdscode not in 
+WHERE cdscode in 
     (SELECT distinct lpad(cast(CDS as STRING),14,'000000000000000') as cdscode 
     FROM ${ref("ca_doe_dass_schools_23-24")})
