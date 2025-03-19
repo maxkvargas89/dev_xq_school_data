@@ -1,0 +1,30 @@
+config {
+    type: "table",
+    schema: "dataform_outputs_xq_school_data",
+    description: "Circulos math proficiency rate ranked amongst comparison schools",
+    tags: ["circulos"]
+}
+
+with metric as 
+(select
+  year,
+  cds_code,
+  school_name,
+  student_group_name,
+  (perc_met_standard + perc_exceeded_standard) as perc_ela_proficient
+from ${ref("int_ca_doe_sbac_proficiency")}
+where grade = 11
+  and test_subject = 'Math'
+  and year = '2023-24'
+  and (perc_met_standard <> 700 and perc_exceeded_standard <> 700))
+
+select 
+  year,
+  school_name, 
+  student_group_name, 
+  perc_ela_proficient,
+  avg(perc_ela_proficient) over(partition by student_group_name) as comp_avg,
+  percent_rank() over(partition by student_group_name order by perc_ela_proficient asc) as percentile
+from metric
+    inner join ${ref("circulos_comps")} as comps on metric.cds_code = comps.cdscode
+order by student_group_name, perc_ela_proficient desc
