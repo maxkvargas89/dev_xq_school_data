@@ -1,17 +1,19 @@
 config {
     type: "table",
     schema: "dataform_outputs_xq_school_data",
-    description: "Circulos chronic absenteeism rate ranked amongst comparison schools",
-    tags: ["circulos"]
+    description: "Iovine Young chronic absenteeism rate ranked amongst comparison schools",
+    tags: ["iovine_young"]
 }
 
-select school_name, 
+select 
+  year,
+  school_name, 
   reporting_category, 
   perc_chronic_absenteeism,
   avg(perc_chronic_absenteeism) over(partition by reporting_category) as comp_avg,
   percent_rank() over(partition by reporting_category order by perc_chronic_absenteeism desc) as percentile
 from ${ref("int_ca_doe_chronic_absenteeism")} as metric
-    inner join ${ref("circulos_comps")} as comps on metric.cds_code = comps.cdscode
+    inner join ${ref("iovine_young_comps")} as comps on metric.cds_code = comps.cdscode
 where year = '2023-24'
   and dass like "%No%"
   and perc_chronic_absenteeism <> 700
