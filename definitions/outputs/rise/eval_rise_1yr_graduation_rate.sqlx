@@ -1,0 +1,48 @@
+config {
+    type: "table",
+    schema: "dataform_outputs_xq_school_data",
+    description: "RISE 1-year graduation rate ranked amongst comparison schools",
+    tags: ["rise"]
+}
+
+with cte as 
+(select
+  cds_code,
+  sum(count_enrollment) as twelvth_grade_enrollment
+from ${ref("int_ca_doe_enrollment")}
+where year = '2023-24'
+  and grade in ('11','12','adult')
+  and county = 'Los Angeles'
+  and reporting_category = 'Total'
+  and count_enrollment <> 700
+group by cds_code),
+
+cte2 as 
+(select 
+  year,
+  cds_code,
+  school_name,  
+  count_one_yr_grads
+from ${ref("int_ca_doe_1_yr_graduation_rate")} as metric
+    inner join ${ref("rise_comps")} as comps on metric.cds_code = comps.cdscode
+where year = '2023-24'
+  and reporting_category = 'Total'
+  and count_one_yr_grads <> 700),
+
+cte3 as
+(select 
+  year, 
+  school_name,
+  count_one_yr_grads/twelvth_grade_enrollment as perc_1yr_graduate
+from cte2 inner join cte
+  on cte2.cds_code = cte.cds_code)
+
+select 
+  year,
+  school_name,
+  'Total' as reporting_category,
+  perc_1yr_graduate,
+  avg(perc_1yr_graduate) over() as comp_avg,
+  percent_rank() over(order by perc_1yr_graduate asc) as percentile
+from cte3
+order by perc_1yr_graduate desc
