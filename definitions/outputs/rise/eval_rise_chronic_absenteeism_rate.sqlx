@@ -1,0 +1,20 @@
+config {
+    type: "table",
+    schema: "dataform_outputs_xq_school_data",
+    description: "RISE chronic absenteeism rate ranked amongst comparison schools",
+    tags: ["rise"]
+}
+
+select 
+  year,
+  school_name, 
+  reporting_category, 
+  perc_chronic_absenteeism,
+  avg(perc_chronic_absenteeism) over(partition by reporting_category) as comp_avg,
+  percent_rank() over(partition by reporting_category order by perc_chronic_absenteeism desc) as percentile
+from ${ref("int_ca_doe_chronic_absenteeism")} as metric
+    inner join ${ref("rise_comps")} as comps on metric.cds_code = comps.cdscode
+where year = '2023-24'
+  and dass like "%Yes%"
+  and perc_chronic_absenteeism <> 700
+order by reporting_category, perc_chronic_absenteeism asc

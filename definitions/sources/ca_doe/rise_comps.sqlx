@@ -7,7 +7,7 @@ config {
 
 WITH CTE AS
 (SELECT 
-    DISTINCT lpad(cast(CDSCode as STRING),14,'000000000000000') as cdscode, school
+    DISTINCT lpad(cast(CDSCode as STRING),14,'000000000000000') as cdscode
 FROM ${ref("ca_doe_school_directory")}
 WHERE (SOCType in ('High Schools (Public)','High Schools In 1 School Dist. (Public)') and County = 'Los Angeles')
      and StatusType <> 'Closed')
