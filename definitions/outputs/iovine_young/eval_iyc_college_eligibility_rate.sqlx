@@ -1,0 +1,20 @@
+config {
+    type: "table",
+    schema: "dataform_outputs_xq_school_data",
+    description: "Iovine Young A-G rate (of grads) ranked amongst comparison schools",
+    tags: ["iovine_young"]
+}
+
+select 
+  year,
+  school_name, 
+  reporting_category, 
+  perc_a_g_grad,
+  avg(perc_a_g_grad) over(partition by reporting_category) as comp_avg,
+  percent_rank() over(partition by reporting_category order by perc_a_g_grad asc) as percentile
+from ${ref("int_ca_doe_a_thru_g")} as metric
+    inner join ${ref("iovine_young_comps")} as comps on metric.cds_code = comps.cdscode
+where year = '2023-24'
+  and dass like "%No%"
+  and perc_a_g_grad <> 700
+order by reporting_category, perc_a_g_grad desc
