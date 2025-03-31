@@ -1,0 +1,34 @@
+config {
+    type: "table",
+    schema: "dataform_outputs_xq_school_data",
+    description: "Shasta college enrollment rates ranked amongst comparison schools",
+    tags: ["shasta"]
+}
+
+with cte as
+(select 
+  year,
+  school_name, 
+  reporting_category, 
+  perc_enroll_college_12mos,
+  count_enroll_uc_12mos/nullif(count_enroll_college_12mos,0) as perc_enroll_uc_12mos,
+  count_enroll_csu_12mos/nullif(count_enroll_college_12mos,0) as perc_enroll_csu_12mos
+from ${ref("int_ca_doe_college_enrollment")} as metric
+    inner join ${ref("shasta_comps")} as comps on metric.cds_code = comps.cdscode
+where year = '2021-22'
+  and perc_enroll_college_12mos <> 700
+  and completer_type = 'All high school completers')
+
+select 
+  year,
+  school_name, 
+  reporting_category, 
+  perc_enroll_college_12mos,
+  avg(perc_enroll_college_12mos) over(partition by reporting_category) as college_comp_avg,
+  percent_rank() over(partition by reporting_category order by perc_enroll_college_12mos asc) as college_percentile,
+  perc_enroll_uc_12mos,
+  avg(perc_enroll_uc_12mos) over(partition by reporting_category) as uc_comp_avg,
+  perc_enroll_csu_12mos,
+  avg(perc_enroll_csu_12mos) over(partition by reporting_category) as csu_comp_avg
+from cte
+order by reporting_category, perc_enroll_college_12mos desc
