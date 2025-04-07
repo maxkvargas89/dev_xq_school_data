@@ -9,8 +9,10 @@ WITH CTE AS
 (SELECT 
     DISTINCT lpad(cast(CDSCode as STRING),14,'000000000000000') as cdscode
 FROM ${ref("ca_doe_school_directory")}
-WHERE (SOCType in ('High Schools (Public)','High Schools In 1 School Dist. (Public)') and district in ('Oakland Unified','SBE - Latitude 37.8 High'))
-  and StatusType <> 'Closed')
+WHERE SOCType in ('High Schools (Public)','High Schools In 1 School Dist. (Public)','Alternative Schools of Choice','K-12 Schools (Public)') 
+  and district in ('Oakland Unified','SBE - Latitude 37.8 High')
+  and StatusType <> 'Closed'
+  and GSoffered <> 'K-12')
 
 SELECT *
 FROM CTE
