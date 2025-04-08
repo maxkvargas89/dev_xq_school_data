@@ -1,0 +1,18 @@
+config {
+    type: "table",
+    schema: "dataform_outputs_xq_school_data",
+    description: "Latitude cte participation ranked amongst comparison schools",
+    tags: ["latitude"]
+}
+
+select 
+  year,
+  school_name,  
+  perc_students_complete_cte,
+  avg(perc_students_complete_cte) over() as comp_avg,
+  percent_rank() over(order by perc_students_complete_cte asc) as percentile
+from ${ref("int_ca_doe_cte_participation")} as metric
+    inner join ${ref("latitude_comps")} as comps on metric.cds_code = comps.cdscode
+where year = '2023-24'
+  and perc_students_complete_cte <> 700
+order by perc_students_complete_cte desc
